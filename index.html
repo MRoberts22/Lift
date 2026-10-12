@@ -13,7 +13,7 @@
 <title>Lift</title>
 <link rel="apple-touch-icon" id="ati" href="">
 <style> /* ===== design tokens: change a value here and the whole app follows ===== */
-:root{--fs-cap:.75rem;--fs-sm:.875rem;--fs-body:.9375rem;--fs-md:1.0625rem;--fs-lg:1.375rem;--fs-xl:2rem;
+:root{--sab:env(safe-area-inset-bottom);--fs-cap:.75rem;--fs-sm:.875rem;--fs-body:.9375rem;--fs-md:1.0625rem;--fs-lg:1.375rem;--fs-xl:2rem;
  --ic-s:16px;--ic-m:20px;--ic-stroke:2.2;--ic-stroke-bold:3;
  --r1:4px;--r2:8px;--r3:12px;--r4:16px;--r5:28px;
  --s1:2px;--s2:4px;--s3:6px;--s4:8px;--s5:12px;--s6:16px;--s7:24px}
@@ -40,7 +40,7 @@ button:active{opacity:.55}
 button:disabled{opacity:.35}
 #app{position:absolute;inset:0;max-width:620px;margin:0 auto;display:flex;flex-direction:column}
 #view{flex:1;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + var(--s5)) var(--s5) 32px}
-#tabs{display:flex;background:var(--tab);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);border-top:1px solid var(--line);padding:var(--s3) var(--s3) calc(env(safe-area-inset-bottom) + var(--s1))}
+#tabs{display:flex;background:var(--tab);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);border-top:1px solid var(--line);padding:var(--s3) var(--s3) calc(var(--sab) + var(--s1))}
 .tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:var(--s1);padding:var(--s3) 0 var(--s2);font-size:min(var(--fs-cap),3.4vw);white-space:nowrap;font-weight:600;color:var(--sub);position:relative}
 .tb.on{color:var(--tx)}
 .bd{position:absolute;top:2px;left:calc(50% + 8px);min-width:18px;height:18px;border-radius:var(--r2);background:var(--red);color:var(--on-red);font:700 var(--fs-cap) var(--fd);display:flex;align-items:center;justify-content:center;padding:0 var(--s2);font-style:normal}
@@ -193,9 +193,9 @@ button.tile{display:flex;flex-direction:column;justify-content:flex-start;align-
 .ci.lift{opacity:.3}
 .cmp-msg{margin:var(--s4) var(--s2) 0}
 .cmp-row .btn{flex:1}
-.cmp-foot{position:sticky;bottom:0;margin:var(--s4) calc(-1 * var(--s5)) calc(-1 * var(--s7));padding:var(--s2) var(--s5) calc(env(safe-area-inset-bottom) + var(--s5));background:var(--bg)}
+.cmp-foot{position:sticky;bottom:0;margin:var(--s4) calc(-1 * var(--s5)) calc(-1 * var(--s7));padding:var(--s2) var(--s5) calc(var(--sab) + var(--s5));background:var(--bg)}
 .try-card .try-note,.blk .try-note{margin-left:0;margin-right:0}
-.pn{will-change:transform;width:100%;max-width:620px;max-height:93%;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);border-radius:var(--r5) var(--r5) 0 0;padding:var(--s4) var(--s5) calc(env(safe-area-inset-bottom) + var(--s7))}
+.pn{will-change:transform;width:100%;max-width:620px;max-height:93%;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);border-radius:var(--r5) var(--r5) 0 0;padding:var(--s4) var(--s5) calc(var(--sab) + var(--s7))}
 .pop .pn{border-radius:var(--r5);max-height:100%;padding:var(--s6) var(--s6) var(--s6)}
 .gr,.ph{touch-action:none}
 .pn .cl-b{width:100%;margin-top:var(--s6)}
@@ -314,7 +314,7 @@ input.lq{background:var(--card);border-color:transparent}
 .rs .settype{min-width:96px;justify-content:center}
 .rs .k{font-size:var(--fs-body)}.rs small{font-size:var(--fs-sm);font-weight:500;margin-left:var(--s4)}
 .br .vv{width:74px}
-#toast{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 82px);max-width:560px;margin:0 auto;background:var(--tx);color:var(--bg);border-radius:var(--r4);padding:var(--s5) var(--s6);display:none;align-items:center;gap:var(--s4);font-weight:600;font-size:var(--fs-body);z-index:80}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(var(--sab) + 82px);max-width:560px;margin:0 auto;background:var(--tx);color:var(--bg);border-radius:var(--r4);padding:var(--s5) var(--s6);display:none;align-items:center;gap:var(--s4);font-weight:600;font-size:var(--fs-body);z-index:80}
 #toast.on{display:flex}
 #toast button{margin-left:auto;font-weight:800;text-decoration:underline}
 #view::-webkit-scrollbar,.pn::-webkit-scrollbar,#su-c::-webkit-scrollbar{display:none}
@@ -357,7 +357,7 @@ input.lq{background:var(--card);border-color:transparent}
 #scr h2{font-size:var(--fs-lg);margin-bottom:var(--s3)}#scr .stack{margin-top:var(--s5)}
 .scrl{position:fixed;left:0;right:0;height:4px;z-index:210;pointer-events:none}
 #scr-pg{bottom:0;background:var(--c-push)}#scr-sc{background:var(--c-pull)}#scr-lv{top:calc(100lvh - 4px);background:var(--grn)}
-#su-f{padding:var(--s4) var(--s5) calc(env(safe-area-inset-bottom) + var(--s5));display:flex;gap:var(--s4);background:var(--bg)}
+#su-f{padding:var(--s4) var(--s5) calc(var(--sab) + var(--s5));display:flex;gap:var(--s4);background:var(--bg)}
 #su-f .btn{flex:1;height:52px}
 .sdots{display:flex;gap:var(--s3)}.sdots i{width:22px;height:5px;border-radius:var(--r1);background:var(--mu)}.sdots i.on{background:var(--tx)}
 .skip{font-size:var(--fs-body);font-weight:600;color:var(--sub);padding:var(--s4) var(--s2)}
@@ -497,8 +497,8 @@ input.lq{background:var(--card);border-color:transparent}
 .exw.arm .exbg span::after{content:"Release to remove";font-size:var(--fs-md)}
 /* glass tab bar */
 #view{padding-bottom:124px}
-#toast{bottom:calc(env(safe-area-inset-bottom) + 96px)}
-#tabs{position:absolute;left:0;right:0;bottom:0;display:block;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:0;padding:0 var(--s5) calc(env(safe-area-inset-bottom) + var(--s4));pointer-events:none;z-index:30}
+#toast{bottom:calc(var(--sab) + 96px)}
+#tabs{position:absolute;left:0;right:0;bottom:0;display:block;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:0;padding:0 var(--s5) calc(var(--sab) + var(--s4));pointer-events:none;z-index:30}
 .glass{pointer-events:auto;position:relative;display:flex;padding:var(--s3);border-radius:var(--r5);touch-action:none;user-select:none;-webkit-user-select:none;
  background:color-mix(in srgb,var(--card) 50%,transparent);-webkit-backdrop-filter:blur(26px) saturate(190%);backdrop-filter:blur(26px) saturate(190%);
  box-shadow:0 12px 34px rgba(0,0,0,.3),inset 0 0 0 1px rgba(255,255,255,.16),inset 0 1px 0 rgba(255,255,255,.35)}
@@ -735,7 +735,7 @@ const RAW=[
 ];
 /* old v1 file keys -> new exercise ids (so earlier weights carry over) */
 const V1={chest_press_machine:'chest_press',incline_db_press:'incline_db_press',db_ohp_mon:'db_ohp',lat_raise_mon:'lateral_raise',tri_ext_mon:'overhead_tri_ext',pullups:'pullups',db_row:'db_row',lat_pulldown:'lat_pulldown',seated_row:'seated_row',rear_delt:'rear_delt_machine',bicep_curl:'bicep_curl',hammer_curl:'hammer_curl',leg_press:'leg_press',rdl:'rdl',lunges:'walking_lunges',leg_curl:'leg_curl',lower_back:'lower_back_machine',calf_raise:'standing_calf_raise',db_ohp_sat:'db_ohp',lat_raise_sat:'lateral_raise',face_pulls:'face_pull',bicep_sat:'bicep_curl',hammer_sat:'hammer_curl',tri_sat:'overhead_tri_ext'};
-const BUILD_ID='4a8a03e71e';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
+const BUILD_ID='ca9fd2344e';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
 const FLAVOR='consumer';   // stamped by build.mjs: 'dev' or 'consumer'. In source it is a placeholder and counts as dev. This is the ONLY place the placeholder appears.
 const APP_VERSION='7.0.0';   // stamped by build.mjs from package.json: the release number. Display-only. The stored data format has its own number (SCHEMA). This is the ONLY place the placeholder appears.
 const VERSION_LABEL=/^\d+\.\d+/.test(APP_VERSION)?APP_VERSION.match(/^\d+\.\d+/)[0]:'dev';
@@ -2011,11 +2011,16 @@ function rxCell(id,date,fallback){if(rxReserve(id,date))return{v:rxSets(id,date)
 const DEVTOOLS={isDev:false,tiles:[],notes:[],banner:null,actions:{},sheets:{},wizardChoices:[],sumode:null,onErase:null,afterRender:null};
 hooks.saveFailed=()=>showSaveWarning();hooks.systemDark=()=>sysDark();hooks.saveOk=()=>hideSaveWarning();hooks.toast=(m,u)=>toast(m,u);hooks.theme=()=>applyTheme();
 
+/* ---------- Home Screen (full screen) app on an iPhone: is the page shorter than the screen? ----------
+ There the page can end a status bar above the screen's bottom edge, so the home-bar space was counted below a page that already stops short of it. This is how much shorter, measured, never assumed.
+ Only the Home Screen app in portrait, and only a status-bar-sized gap (20 to 80), so a keyboard or a browser toolbar is never mistaken for it. */
+const screenShortfall=(inner,screenH,standalone,portrait)=>{if(!standalone||!portrait||!Number.isFinite(inner)||!Number.isFinite(screenH))return 0;const d=screenH-inner;return d>=20&&d<=80?Math.round(d):0;};
+
 /* ---------- Screen check (Settings): the real numbers behind the page height, as rows of [label, value] ----------
  m: inner [w,h], vv [h,top] or null, client [w,h], screen [w,h], outer [w,h], vh svh lvh dvh, top and bottom insets, standalone. Reading only: nothing is stored or changed. */
 function screenRows(m){const wh=a=>a?a[0]+' x '+a[1]:'not available',d=m.screen[1]-m.inner[1];
  return[['Page (innerWidth x innerHeight)',wh(m.inner)],['Visible area (visualViewport)',m.vv?m.vv[0]+' tall, top '+m.vv[1]:'not available'],['Document (clientHeight)',wh(m.client)],['Screen (screen.width x height)',wh(m.screen)],['Window (outerWidth x outerHeight)',wh(m.outer)],
-  ['100vh',String(m.vh)],['100svh',String(m.svh)],['100lvh',String(m.lvh)],['100dvh',String(m.dvh)],['Status bar inset (top)',String(m.top)],['Home bar inset (bottom)',String(m.bottom)],['Home Screen app',m.standalone?'yes':'no'],
+  ['100vh',String(m.vh)],['100svh',String(m.svh)],['100lvh',String(m.lvh)],['100dvh',String(m.dvh)],['Status bar inset (top)',String(m.top)],['Home bar inset (bottom)',String(m.bottom)],['Home Screen app',m.standalone?'yes':'no'],['Bottom space used by the page',m.sab==null?'not measured':String(m.sab)],
   ['Page vs screen',d>0?d+' shorter':d<0?(-d)+' taller':'same height']];}
 
 /* ---------- first-launch wizard: choose the workouts of one day (or of the warm-up or core list) ----------
@@ -2772,7 +2777,7 @@ function act0(a,el){const d=el.dataset,id=d.id,l=d.l;ui.focus=false;
   case 'scrcheck':scrShow();break;
   case 'scrclose':{const o=$('#scr');if(o)o.remove();break;}
   case 'scrmeasure':scrMeasure();break;
-  case 'scrreset':scrReset();break;
+  case 'scrreset':viewportNudge(scrMeasure);break;
   case 'suday':suOpenDay(d.d);break;
   case 'susave':suSaveDay();break;
   case 'supick':{const a=ui.su.sel,i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);break;}
@@ -2808,18 +2813,28 @@ document.addEventListener('input',e=>{if(e.target.id==='suname'&&ui.su)ui.su.nam
  It changes nothing and stores nothing. "Try viewport reset" briefly rewrites the viewport tag and puts it back, to see whether the numbers change. */
 function scrMeasure(){const px=(css)=>{const e=document.createElement('div');e.style.cssText='position:fixed;left:0;top:0;width:1px;visibility:hidden;pointer-events:none;'+css;document.body.appendChild(e);const n=e.offsetHeight,p=getComputedStyle(e);const t=parseFloat(p.paddingTop)||0,b=parseFloat(p.paddingBottom)||0;e.remove();return[n,t,b];};
  const ins=px('padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)'),v=window.visualViewport,r=document.documentElement;
- const m={inner:[innerWidth,innerHeight],vv:v?[Math.round(v.height),Math.round(v.offsetTop)]:null,client:[r.clientWidth,r.clientHeight],screen:[screen.width,screen.height],outer:[outerWidth,outerHeight],vh:px('height:100vh')[0],svh:px('height:100svh')[0],lvh:px('height:100lvh')[0],dvh:px('height:100dvh')[0],top:ins[1],bottom:ins[2],standalone:navigator.standalone===true};
+ const m={inner:[innerWidth,innerHeight],vv:v?[Math.round(v.height),Math.round(v.offsetTop)]:null,client:[r.clientWidth,r.clientHeight],screen:[screen.width,screen.height],outer:[outerWidth,outerHeight],vh:px('height:100vh')[0],svh:px('height:100svh')[0],lvh:px('height:100lvh')[0],dvh:px('height:100dvh')[0],top:ins[1],bottom:ins[2],sab:px('padding-bottom:var(--sab)')[2]+'px',standalone:navigator.standalone===true};
  const el=$('#scr-rows');if(el)el.innerHTML=screenRows(m).map(([k,x])=>`<div class="scr-r"><span>${esc(k)}</span><b>${esc(x)}</b></div>`).join('');const sc=$('#scr-sc');if(sc)sc.style.top=(screen.height-4)+'px';}
 function scrShow(){if($('#scr'))return;const o=document.createElement('div');o.id='scr';
  o.innerHTML=`<h2>Screen check</h2><p class="muted sm">Red line: bottom of the page. Blue line: bottom of the screen. Green line: bottom of 100lvh. Send a screenshot of this screen.</p><div id="scr-rows"></div><div class="stack"><button class="btn" data-act="scrmeasure">Measure again</button><button class="btn" data-act="scrreset">Try viewport reset</button><button class="btn pri" data-act="scrclose">Close</button></div><i class="scrl" id="scr-pg"></i><i class="scrl" id="scr-sc"></i><i class="scrl" id="scr-lv"></i>`;
  document.body.appendChild(o);scrMeasure();}
-function scrReset(){const meta=document.querySelector('meta[name=viewport]');if(!meta)return;const old=meta.content;meta.content='width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1';setTimeout(()=>{meta.content=old;setTimeout(scrMeasure,300);},200);}
+/* Rewrite the viewport tag for a moment and put it back exactly as it was: on some launches this makes the phone re-measure the page. Used by the Screen check and by fitViewport. */
+function viewportNudge(done){const meta=document.querySelector('meta[name=viewport]');if(!meta){if(done)done();return;}const old=meta.content;meta.content='width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1';setTimeout(()=>{meta.content=old;setTimeout(()=>{if(done)done();},300);},200);}
 
 /* Keep sheets inside the part of the screen you can actually see. On an iPhone the keyboard covers the bottom of the screen WITHOUT resizing the page, so a bottom-anchored sheet used to sit behind it and the page got pushed around.
    vvFit publishes the visible area as --vvt (its top) and --vvh (its height), which the sheet overlay already reads. body.kb marks a text field being edited in a sheet, and folds the extras away (see the CSS). */
 const vvFit=()=>{const v=window.visualViewport,r=document.documentElement.style;if(!v)return;r.setProperty('--vvt',v.offsetTop+'px');r.setProperty('--vvh',v.height+'px');};
 const kbSet=on=>document.body.classList.toggle('kb',!!on),kbField=el=>!!(el&&el.matches&&el.matches('#sheet input:not([type=checkbox]):not([type=radio]):not([type=file]),#sheet textarea'));
 if(window.visualViewport){visualViewport.addEventListener('resize',()=>{vvFit();if(window.innerHeight-visualViewport.height<80&&!kbField(document.activeElement))kbSet(false);});visualViewport.addEventListener('scroll',vvFit);vvFit();}
+/* Home Screen app: if the page is shorter than the screen, nudge the viewport once; if it is still short, drop the home-bar space (--sab) so the bottom bar sits at the bottom of what the phone does draw. */
+let NUDGED=false;
+function fitViewport(){const miss=screenShortfall(window.innerHeight,Math.max(screen.height||0,screen.width||0),navigator.standalone===true,window.innerHeight>window.innerWidth),r=document.documentElement.style;
+ if(!miss){r.removeProperty('--sab');return;}
+ if(!NUDGED){NUDGED=true;viewportNudge(fitViewport);return;}
+ r.setProperty('--sab','0px');}
+window.addEventListener('resize',fitViewport);window.addEventListener('orientationchange',fitViewport);
+fitViewport();
+setTimeout(fitViewport,800);
 let kbT;document.addEventListener('focusin',e=>{clearTimeout(kbT);if(kbField(e.target))kbSet(true);});
 document.addEventListener('focusout',()=>{clearTimeout(kbT);kbT=setTimeout(()=>{if(!kbField(document.activeElement))kbSet(false);},120);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&iso()!==ui.today){ui.today=iso();ui.day=new Date().getDay();render();}});
