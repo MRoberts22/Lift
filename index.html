@@ -32,7 +32,7 @@
 :root[data-theme="dark"]{--grn:#3DD68C;--on-g:#05200f;--sel:#F1F4F8;--sel-t:#0E131C;--dot:#F1F4F8;--acc:#7FA8FF;--bg:#0E131C;--card:#18202C;--el:#222C3B;--cell:#222C3B;--tx:#F1F4F8;--sub:#93A0B2;--line:rgba(255,255,255,.09);--mu:#2C384A;--c-push:#FF6369;--c-pull:#5C93FF;--c-legs:#F472B6;--warn:#F5B93A;--warn-bg:#F5B93A;--c-arms:#3DD68C;--c-rest:#93A0B2;--c-upper:#A78BFA;--c-full:#2DD4BF;--red:#FF6B73;--on-red:#1c0508;--tab:rgba(14,19,28,.9);color-scheme:dark;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;-webkit-text-size-adjust:100%;overscroll-behavior:none;line-height:1.35}
-body{position:fixed;inset:0;height:calc(100% + var(--miss,0px));font-size:var(--fs-body)}
+body{position:fixed;inset:0;font-size:var(--fs-body)}
 button,select,.dd,textarea,input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]),[role=button]{min-height:44px}
 .ic,.x,.pa,.chk,.qb{min-width:44px;min-height:44px}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation;text-align:inherit}
@@ -352,6 +352,11 @@ input.lq{background:var(--card);border-color:transparent}
 #su-c{flex:1;overflow-y:auto;padding:var(--s4) var(--s5) var(--s6)}
 .dayhd{display:flex;align-items:center;gap:var(--s4);width:100%;min-height:44px;padding:0}
 .dayhd .dn{font-size:var(--fs-md);font-weight:700}.dayhd .cnt{margin-left:auto}
+.scr-r{display:flex;justify-content:space-between;gap:var(--s5);padding:var(--s3) 0;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
+#scr{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top) + var(--s5)) var(--s5) calc(var(--s7) + var(--s7))}
+#scr h2{font-size:var(--fs-lg);margin-bottom:var(--s3)}#scr .stack{margin-top:var(--s5)}
+.scrl{position:fixed;left:0;right:0;height:4px;z-index:210;pointer-events:none}
+#scr-pg{bottom:0;background:var(--c-push)}#scr-sc{background:var(--c-pull)}#scr-lv{top:calc(100lvh - 4px);background:var(--grn)}
 #su-f{padding:var(--s4) var(--s5) calc(env(safe-area-inset-bottom) + var(--s5));display:flex;gap:var(--s4);background:var(--bg)}
 #su-f .btn{flex:1;height:52px}
 .sdots{display:flex;gap:var(--s3)}.sdots i{width:22px;height:5px;border-radius:var(--r1);background:var(--mu)}.sdots i.on{background:var(--tx)}
@@ -730,8 +735,8 @@ const RAW=[
 ];
 /* old v1 file keys -> new exercise ids (so earlier weights carry over) */
 const V1={chest_press_machine:'chest_press',incline_db_press:'incline_db_press',db_ohp_mon:'db_ohp',lat_raise_mon:'lateral_raise',tri_ext_mon:'overhead_tri_ext',pullups:'pullups',db_row:'db_row',lat_pulldown:'lat_pulldown',seated_row:'seated_row',rear_delt:'rear_delt_machine',bicep_curl:'bicep_curl',hammer_curl:'hammer_curl',leg_press:'leg_press',rdl:'rdl',lunges:'walking_lunges',leg_curl:'leg_curl',lower_back:'lower_back_machine',calf_raise:'standing_calf_raise',db_ohp_sat:'db_ohp',lat_raise_sat:'lateral_raise',face_pulls:'face_pull',bicep_sat:'bicep_curl',hammer_sat:'hammer_curl',tri_sat:'overhead_tri_ext'};
-const BUILD_ID='cb15f1d02c';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
-const FLAVOR='dev';   // stamped by build.mjs: 'dev' or 'consumer'. In source it is a placeholder and counts as dev. This is the ONLY place the placeholder appears.
+const BUILD_ID='4a8a03e71e';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
+const FLAVOR='consumer';   // stamped by build.mjs: 'dev' or 'consumer'. In source it is a placeholder and counts as dev. This is the ONLY place the placeholder appears.
 const APP_VERSION='7.0.0';   // stamped by build.mjs from package.json: the release number. Display-only. The stored data format has its own number (SCHEMA). This is the ONLY place the placeholder appears.
 const VERSION_LABEL=/^\d+\.\d+/.test(APP_VERSION)?APP_VERSION.match(/^\d+\.\d+/)[0]:'dev';
 const BUILD_LABEL=/^[0-9a-f]{10}$/.test(BUILD_ID)?BUILD_ID.slice(0,7):'dev';
@@ -1984,33 +1989,6 @@ const tryAddCount=t=>{const p=tryAddPlan(t);return tryDates(t).reduce((n,d)=>n+(
 function tryDecide(which){const t=tryCurrent();if(!t||tryPhase(t)!=='ended')return false;
  if(which==='no'){tryRelease(t);t.state='dismissed';save();trySave();return true;}
  return which==='yes'?tryFinalize(tryPlanDefaults(t)):which==='add'?tryFinalize(tryAddPlan(t)):false;}
-
-/* ---------- demo mode: 14 weeks of believable history, with your real data saved and restorable ---------- */
-const BK='liftlog_real_backup';
-const DEMO_START={chest_press:70,incline_db_press:40,db_ohp:25,lateral_raise:10,overhead_tri_ext:25,pullups:5,db_row:50,lat_pulldown:90,seated_row:80,rear_delt_machine:55,bicep_curl:25,hammer_curl:25,leg_press:200,rdl:50,walking_lunges:25,leg_curl:70,lower_back_machine:90,standing_calf_raise:130,face_pull:35};
-function rngSeed(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-function buildDemo(seed){const t=iso(),r=rngSeed(seed),calm=addDays(t,-12),first=addDays(weekStart(t),-7*13),vac=weekStart(addDays(t,-7*5));
- for(let d=first;d<t;d=addDays(d,1)){const dow=parse(d).getDay(),away=weekStart(d)===vac;if(away)continue;
-  const ids=listFor('main',d);
-  if(ids.length&&(d>calm||r()>.1)){
-   ids.forEach(id=>{if(d<=calm&&r()<.06)return;if(!S.w[id])commitWeight(id,DEMO_START[id]||20,d);
-    if(countedWeeks(id).size>=needWeeks(id))commitWeight(id,wt(id)+inc(id),d);
-    let hit=d>calm||r()>.08,reps;const e=E[id];
-    if(e.u==='lb'&&!/sec/i.test(String(e.reps))&&r()<.3){const tg=repsPerSet(id,d);reps=tg.map(n=>n-(r()<.12?1:0));hit=reps.every((n,i)=>n>=tg[i]);}
-    const x={d,w:wt(id),hit};if(reps)x.reps=reps;if(r()<.45)x.eff=[2,3,3,4,4,5][Math.floor(r()*6)];
-    (S.logs[id]=S.logs[id]||[]).push(x);(S.done[d]=S.done[d]||[]).push(id);});
-   listFor('warmup',d).forEach(id=>{if(r()<.85)(S.done[d]=S.done[d]||[]).push(id);});}
-  if(r()<.65)listFor('core',d).forEach(id=>{if(r()<.9)(S.done[d]=S.done[d]||[]).push(id);});
-  if((dow===3||dow===0)&&r()<.8)(S.cardio[d]=S.cardio[d]||[]).push({t:['run','walk','bike'][Math.floor(r()*3)],mi:Math.round((1.5+r()*2.5)*10)/10});}
- const td=addDays(t,-45),w0=wtOn('leg_press',td);if(w0)(S.rm.leg_press=[]).push({d:td,w:Math.round(E1RM(w0,10)/10)*10,r:1});}
-function demoBase(name,theme){normalize({});S.name=name||'Mike';S.opt.theme=theme;S.setup='done';S.swp=true;S.demo=true;applyRoutine(routineFor('intermediate',4));S.plan.warmup=clean(['pushup_wide','pushup','pushup_diamond','dips']);}
-function loadDemo(){if(!S.demo){try{localStorage.setItem(BK,JSON.stringify(S));}catch(e){}}
- tryClear(true);
- const name=S.name,theme=S.opt.theme;
- for(let seed=11;seed<80;seed++){demoBase(name,theme);buildDemo(seed);if(rmCandidates().length&&alerts().length>=2&&alerts().length<=5)break;}
- save();hooks.theme();ui.tab='today';ui.day=new Date().getDay();ui.oo=null;ui.sheet=null;ui.su=null;}
-function exitDemo(){let raw=null;try{raw=localStorage.getItem(BK);}catch(e){}
- let o={};try{o=raw?JSON.parse(raw):{};}catch(e){}normalize(o);delete S.demo;tryClear(true);try{localStorage.removeItem(BK);}catch(e){}save();hooks.theme();ui.sheet=null;ui.su=null;ui.tab='today';ui.day=new Date().getDay();}
 /* ---------- DOM helpers, toast, theme, sheets (the UI side of the engine's hooks) ---------- */
 const darkMQ=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null,sysDark=()=>!!(darkMQ&&darkMQ.matches);
 function pushSheet(s){s.back=ui.sheet||null;ui.sheet=s;const t=$('#toast');if(t)t.className='';}
@@ -2033,10 +2011,12 @@ function rxCell(id,date,fallback){if(rxReserve(id,date))return{v:rxSets(id,date)
 const DEVTOOLS={isDev:false,tiles:[],notes:[],banner:null,actions:{},sheets:{},wizardChoices:[],sumode:null,onErase:null,afterRender:null};
 hooks.saveFailed=()=>showSaveWarning();hooks.systemDark=()=>sysDark();hooks.saveOk=()=>hideSaveWarning();hooks.toast=(m,u)=>toast(m,u);hooks.theme=()=>applyTheme();
 
-/* ---------- Home Screen (full screen) mode on iPhone ----------
- There the page can be shorter than the screen by about the status bar, which left the bottom bar floating too high. This is how much shorter, measured rather than assumed.
- Only the Home Screen app in portrait is ever corrected, and only by a status-bar-sized amount, so a keyboard or a browser toolbar can never be mistaken for it. */
-const screenShortfall=(inner,screenH,standalone,portrait)=>{if(!standalone||!portrait||!Number.isFinite(inner)||!Number.isFinite(screenH))return 0;const d=screenH-inner;return d>=20&&d<=80?Math.round(d):0;};
+/* ---------- Screen check (Settings): the real numbers behind the page height, as rows of [label, value] ----------
+ m: inner [w,h], vv [h,top] or null, client [w,h], screen [w,h], outer [w,h], vh svh lvh dvh, top and bottom insets, standalone. Reading only: nothing is stored or changed. */
+function screenRows(m){const wh=a=>a?a[0]+' x '+a[1]:'not available',d=m.screen[1]-m.inner[1];
+ return[['Page (innerWidth x innerHeight)',wh(m.inner)],['Visible area (visualViewport)',m.vv?m.vv[0]+' tall, top '+m.vv[1]:'not available'],['Document (clientHeight)',wh(m.client)],['Screen (screen.width x height)',wh(m.screen)],['Window (outerWidth x outerHeight)',wh(m.outer)],
+  ['100vh',String(m.vh)],['100svh',String(m.svh)],['100lvh',String(m.lvh)],['100dvh',String(m.dvh)],['Status bar inset (top)',String(m.top)],['Home bar inset (bottom)',String(m.bottom)],['Home Screen app',m.standalone?'yes':'no'],
+  ['Page vs screen',d>0?d+' shorter':d<0?(-d)+' taller':'same height']];}
 
 /* ---------- first-launch wizard: choose the workouts of one day (or of the warm-up or core list) ----------
  at is a weekday number, or 'warmup' or 'core'. The picker starts from what is already there, so ticking adds and unticking takes off. Back from the picker saves nothing. */
@@ -2080,20 +2060,6 @@ const plainTip=h=>String(h).replace(/<br\s*\/?>/g,'. ').replace(/<[^>]+>/g,'').r
 const chartAttrs=(label,n,now,tipHtml,two)=>` role="slider" tabindex="0"${two?'':' aria-orientation="horizontal"'} aria-label="${esc(label)}" aria-valuemin="1" aria-valuemax="${n}" aria-valuenow="${now}" aria-valuetext="${esc(plainTip(tipHtml))}"`;
 /* ---------- motion: the one place that asks whether the reader wants less of it ---------- */
 let REDUCED=false;try{const rm=matchMedia('(prefers-reduced-motion: reduce)');REDUCED=rm.matches;rm.addEventListener('change',e=>{REDUCED=e.matches;});}catch(e){}   // the one place script motion asks about it
-/* DEV-ONLY: not part of the consumer build. */
-/* ---------- screen refresh rate ----------
- A web page cannot ask for 120 Hz; iOS decides, and by default Safari holds page animation near 60 fps. So the app measures what it actually gets and says so. */
-function refreshFromFrames(ts){if(!Array.isArray(ts)||ts.length<10)return null;const d=[];for(let i=1;i<ts.length;i++)d.push(ts[i]-ts[i-1]);d.sort((a,b)=>a-b);const med=d[Math.floor(d.length/2)];return med>0?{hz:Math.round(1000/med),n:d.length}:null;}
-const refreshClass=hz=>hz>=100?'high':hz>=50?'standard':'low';
-const REFRESH_RATES=[30,48,50,60,72,75,90,100,120,144,165,240];
-const refreshLabel=hz=>{const r=REFRESH_RATES.find(v=>Math.abs(v-hz)/v<=.06);return(r||hz)+' Hz';};
-function refreshAdvice(hz){const c=refreshClass(hz),l=refreshLabel(hz);
- if(!hz)return'The screen rate could not be measured. Try again.';
- if(c==='high')return'Your screen is updating at about '+l+'. Scrolling, swipes and animations in this app run at that rate.';
- if(c==='standard')return'Your screen is updating at about '+l+'. If your iPhone has a 120 Hz (ProMotion) display, two things hold it at 60: Low Power Mode, and Safari\'s "Prefer Page Rendering Updates near 60fps" setting, which iOS turns on by default (Settings, Apps, Safari, Advanced, Feature Flags). Turn that off, close Safari, then reopen the app. Some in-app viewers also cap the rate.';
- return'Your screen is updating slowly right now (about '+l+'). That is usually Low Power Mode or a busy phone. Try again in a moment.';}
-function measureRefresh(done){if(typeof requestAnimationFrame!=='function'){done(null);return;}const ts=[];const f=t=>{ts.push(t);if(ts.length<66)requestAnimationFrame(f);else done(refreshFromFrames(ts.slice(2)));};requestAnimationFrame(f);}
-
 function bodySVG(p,s){
  const cl=m=>'mu'+(m===p?' p':s.includes(m)?' s':''),P=(c,d)=>`<path class="${c}" d="${d}"/>`,N=d=>P('bgs',d);
  const head=`<ellipse class="bgs" cx="100" cy="23" rx="14" ry="18"/>`+N('M91 40 L91 56 L109 56 L109 40 Z');
@@ -2335,7 +2301,7 @@ function viewStats(){const st=ui.st.tab;return`<h1 class="pad">Stats</h1><div cl
 
 /* ---------- Settings ---------- */
 function viewSet(){const th=S.opt.theme,S1=()=>`<section class="tile t2"><h3>Your name</h3><p class="muted" style="margin:4px 0 10px">Used in your daily greeting.</p><input class="inp" style="background:var(--cell)" data-k="name" placeholder="Name" value="${esc(S.name||'')}"></section>`,S2=()=>`<section class="tile t2"><h3>Appearance</h3><p class="muted" style="margin:4px 0 10px">Choose how the app looks.</p><div class="seg">${[['light','Light'],['dark','Dark']].map(([v,t])=>`<button class="${th===v?'on':''}" data-act="theme" data-v="${v}">${t}</button>`).join('')}</div></section>`,S3=()=>`<section class="tile t2"><h3>Celebrations</h3><p class="muted" style="margin:4px 0 10px">Confetti when you increase a weight. Light only celebrates a lift you have already trained in a previous week, once a day per lift.</p><div class="seg sm">${[['off','Off'],['light','Light'],['moderate','Moderate'],['epic','Over the top']].map(([v,t])=>`<button class="${S.opt.fx===v?'on':''}" data-act="fx" data-v="${v}">${t}</button>`).join('')}</div></section>`,S6=()=>`<section class="tile t2"><h3>Reset</h3><p class="muted" style="margin:4px 0 0">Clearing the routine removes every day's exercise list. Weights and history stay.</p><div class="ft"><button class="btn" data-act="resetplan">Clear routine</button><button class="btn red" data-act="erase">Erase all data</button></div></section></div>`;
- return`<h1 class="pad">Settings</h1><div class="bento" style="margin-top:14px">${sec('Your name',S1)}${sec('Appearance',S2)}${sec('Celebrations',S3)}${DEVTOOLS.tiles.map(([n,f])=>sec(n,f)).join('')}${sec('Glossary',()=>`<section class="tile t2"><h3>Glossary</h3><p class="muted" style="margin:4px 0 0">What effective sets, estimated 1RM, effort, hold time and the other words in this app mean.</p><div class="ft"><button class="btn" data-act="gloss">Open glossary</button></div></section>`)}${sec('Backup',setBackup)}${sec('Reset',S6)}${errLog.length?`<section class="tile t2"><h3>Diagnostics</h3><p class="muted" style="margin:4px 0 0">${errLog.length} problem${errLog.length>1?'s':''} caught since you opened the app. Nothing was lost.</p><div class="ft"><button class="btn" data-act="diag">See details</button></div></section>`:''}</div>
+ return`<h1 class="pad">Settings</h1><div class="bento" style="margin-top:14px">${sec('Your name',S1)}${sec('Appearance',S2)}${sec('Celebrations',S3)}${DEVTOOLS.tiles.map(([n,f])=>sec(n,f)).join('')}${sec('Glossary',()=>`<section class="tile t2"><h3>Glossary</h3><p class="muted" style="margin:4px 0 0">What effective sets, estimated 1RM, effort, hold time and the other words in this app mean.</p><div class="ft"><button class="btn" data-act="gloss">Open glossary</button></div></section>`)}${sec('Screen check',()=>`<section class="tile t2"><h3>Screen check</h3><p class="muted" style="margin:4px 0 0">Shows the real size of this screen and where the page ends. Only for sorting out a layout problem. It changes nothing.</p><div class="ft"><button class="btn" data-act="scrcheck">Open screen check</button></div></section>`)}${sec('Backup',setBackup)}${sec('Reset',S6)}${errLog.length?`<section class="tile t2"><h3>Diagnostics</h3><p class="muted" style="margin:4px 0 0">${errLog.length} problem${errLog.length>1?'s':''} caught since you opened the app. Nothing was lost.</p><div class="ft"><button class="btn" data-act="diag">See details</button></div></section>`:''}</div>
 <p class="muted sm pad" style="margin-top:18px">Lift ${VERSION_LABEL} · ${DEVTOOLS.isDev?'Dev build · ':''}Build ${BUILD_LABEL}. Open it from your Home Screen icon so your data stays put.</p>`;}
 function restoreBackup(){restoreFromText(($('#bk')||{}).value);}
 function restoreFromText(text){const p=parseBackup(text);if(!p.ok){toast(p.error);return;}
@@ -2589,24 +2555,6 @@ gesture({name:'glass',
   let k=0,bd=1e9;c.b.forEach((b,j)=>{const r=b.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-e.clientX);if(d<bd){bd=d;k=j;}});c.k=k;c.b.forEach((b,j)=>b.classList.toggle('hot',j===k));},
  end:(c,e,claimed)=>{if(!claimed)return;c.s.classList.remove('drag');c.b.forEach(b=>b.classList.remove('hot'));const b=c.b[c.k];if(b&&!b.classList.contains('on')){c.l._x=c.cur;b.click();}else c.l.style.transform='translateX('+c.l._x+'px)';ui.noClick=Date.now();}});
 /* GLASS-SEG END */
-/* DEV-ONLY: not part of the consumer build.
- Everything here is a developer or demo tool: the demo data, the screen refresh meter, and the routine setup shortcut in Settings. It plugs into the app through DEVTOOLS (ui/logic.js). */
-const routineTile=()=>`<section class="tile t2"><h3>Routine setup</h3><p class="muted" style="margin:4px 0 0">Build a week from scratch or let the app suggest one by experience level.</p><div class="ft"><button class="btn" data-act="setup">Run setup</button></div></section>`;
-const demoTile=()=>`<section class="tile t2"><h3>Demo data</h3><p class="muted" style="margin:4px 0 0">${S.demo?'Demo data is on. Your real data is saved and comes back when you exit.':'Fill the app with 14 weeks of sample workouts to try the charts and insights. Your real data is saved first and restored when you exit.'}</p><div class="ft">${S.demo?'<button class="btn pri" data-act="demoexit">Exit demo and restore my data</button>':'<button class="btn" data-act="demo">Load demo data</button>'}</div></section>`;
-function screenTile(){const hz=ui.hz;return`<section class="tile t2" data-tile="refresh"><h3>Screen refresh</h3>${hz==null?'<p class="muted" style="margin:4px 0 0">Measuring…</p>':`<b class="big">${hz?esc(refreshLabel(hz)):'Unknown'}</b><p class="muted" style="margin:6px 0 0">${esc(refreshAdvice(hz))}</p>`}<div class="ft"><button class="btn" data-act="hz">Measure again</button></div></section>`;}
-function measureHz(){ui.hz=null;measureRefresh(r=>{ui.hz=r?r.hz:0;if(ui.tab==='set'&&document.querySelector('[data-tile="refresh"]'))refreshTile('refresh',screenTile);});}
-DEVTOOLS.isDev=true;
-DEVTOOLS.tiles=[['Routine setup',routineTile],['Demo data',demoTile],['Screen refresh',screenTile]];
-DEVTOOLS.banner=()=>S.demo?'<section class="tile t2" style="display:flex;align-items:center;gap:12px;padding:12px 16px"><span class="muted sm" style="flex:1">Demo data is on. Your real data is saved.</span><button class="btn sm" data-act="demoexit">Exit demo</button></section>':'';
-DEVTOOLS.wizardChoices=[['demo','Try with demo data','See the app with 14 weeks of sample history.']];
-DEVTOOLS.sumode=v=>{if(v==='demo'){loadDemo();return true;}return false;};
-DEVTOOLS.onErase=()=>{try{localStorage.removeItem(BK);}catch(e){}};
-DEVTOOLS.afterRender=()=>{if(ui.tab==='set'&&ui.hz===undefined)measureHz();};
-DEVTOOLS.actions={
- hz:()=>measureHz(),
- demo:()=>{ask('Load demo data?','Your current data is saved first and comes back when you tap Exit demo.','Load demo data',()=>loadDemo());},
- demoexit:()=>{ask('Exit the demo?','Your own data comes back. Anything you changed during the demo is discarded.','Exit and restore my data',()=>exitDemo());},
- setup:()=>{ui.su={step:'start',name:S.name||'',level:'beginner',days:3,sel:[]};S.setup=null;}};
 /* ---------- Try a new routine: the screens ----------
  The rules live in engine/trial.js. This file only draws the button, the trial card on Today, the start sheet and the two-column compare sheet, and turns taps and drags into those engine calls.
  Two ways into the compare sheet: "Edit days" while a trial runs (live edits, one trial day at a time) and "Compare routines" when it is over (old routine on the left, tried on the right, nothing changes until Finalize).
@@ -2700,238 +2648,6 @@ const TRY_ACTIONS={
  cmpfinal(){const c=cmpCtx();if(!c||c.plan)return;const n=Object.values(c.s.days).filter(x=>x.use==='new').length,days=c.s.days;
   askFrom(c.s,'Finalize your routine?',n?n+(n===1?' day becomes':' days become')+' part of your routine. The other days keep your old routine. A copy of your data is saved first.':'No day is set to change, so your routine stays as it is.','Finalize',()=>{tryFinalize(days);toast(n?'Your routine is updated.':'Your routine stays as it was.');});}
 };
-/* ---------- gen-data.js: the routine generator's data (ROADMAP Phase 7). EXPERIMENTAL. ----------
- Templates are data, not logic. Everything about sets, reps, rest and weekly volume is READ from the shared constants (CATEGORIES, GOAL_MOD, LEVEL_MOD, MV): this file holds no second copy.
- What is here is only what the shared constants do not have: how a level changes the days and the effort target, the session-time model, and the week structures. All of it is an editable design judgment. */
-const GEN={
- levels:{
-  beginner:{label:'Beginner',desc:'Never trained before.',days:[2,3],mult:.6,rir:[3,4]},
-  novice:{label:'Novice',desc:'Under 6 months of consistent training.',days:[3,4],mult:.8,rir:[2,4]},
-  intermediate:{label:'Intermediate',desc:'6 months to 2 years.',days:[3,5],mult:1,rir:[1,3]},
-  advanced:{label:'Advanced',desc:'2 or more years.',days:[3,6],mult:1,rir:[0,3]}},
- goals:{strength:'Get stronger',muscle:'Build muscle',fitness:'General fitness'},
- focus:{full:'Full body',upper:'Upper body',lower:'Lower body (legs and glutes)'},
- sexes:{male:'Male',female:'Female',skip:'Skip'},
- region:{upper:['chest','back','shoulders','rear','biceps','triceps'],lower:['quads','hamstrings','glutes','calves']},
- sexEmph:{male:{upper:1.1,lower:.9},female:{upper:.9,lower:1.15},skip:{upper:1,lower:1}},   /* a default emphasis for FULL BODY only; an explicit focus ignores it */
- minutes:[30,45,60,90],tolerance:.1,
- time:{tutPerRep:3,transition:75},   /* seconds under tension per rep, and seconds to move between exercises */
- maxPerMuscle:{beginner:1,novice:2,intermediate:2,advanced:2},fewMuscles:2,
- equip:{full:{label:'Full gym',eq:null,bench:true},dumbbells:{label:'Dumbbells and bodyweight only',eq:['dumbbell','bodyweight'],bench:false},minimal:{label:'Minimal (bodyweight only)',eq:['bodyweight'],bench:false}},
- pref:{beginner:{machine:0,dumbbell:1,bodyweight:1,cable:2,smith:3,kettlebell:4,bar:5,ball:5},novice:{dumbbell:0,machine:1,cable:1,bodyweight:2,smith:2,kettlebell:3,bar:3,ball:5},intermediate:{ball:5},advanced:{ball:5}},   /* lower is chosen first */
- patterns:['squat','lunge','hinge','horizontal push','vertical push','horizontal pull','vertical pull'],
- balance:{pushPull:[.7,1.4],quadHinge:[.6,1.8]},
- light:{sets:2},   /* a light session is maintenance: this many hard sets per muscle, so a whole region fits in one short session */
- deload:{share:.55,rirShift:2,monthWeek:3,monthLevels:['intermediate','advanced'],every:{beginner:8,novice:6,intermediate:5,advanced:4},reviewWeek:10},
- trials:{day:{label:'One day',weeks:1},week:{label:'One week',weeks:1},month:{label:'One month',weeks:4},indefinite:{label:'Indefinitely',weeks:12}},   /* indefinite shows the first 12 weeks of a rolling plan */
- calibration:'Week one: pick a weight that leaves 3 to 4 reps in reserve for the prescribed reps, then log how hard it felt. The app waits for enough sessions before it comments.'
-};
-const GEN_M={push:['chest','shoulders','triceps'],pull:['back','rear','biceps'],upper:['chest','back','shoulders','biceps','triceps','rear'],lower:['quads','hamstrings','glutes','calves'],lq:['quads','calves'],lh:['hamstrings','glutes'],
- fa:['quads','chest','back','hamstrings','shoulders','rear','glutes','triceps','biceps','calves'],fb:['hamstrings','back','chest','glutes','rear','shoulders','quads','biceps','triceps','calves'],fx:['quads','chest','shoulders','triceps','calves'],fy:['hamstrings','glutes','back','rear','biceps']};
-/* Muscle lists are in priority order, and a short session keeps only the first few, so the full body lists alternate pushing and pulling muscles: any prefix stays balanced.
-   A template is a set of sessions (their muscles, in priority order; v rotates the exercise choice so A and B differ; light marks a maintenance session) and a week: [weekday, session], Sunday 0, Monday 1.
-   Spacing is checked by tests over the real plans: no muscle with 3 or more sets on consecutive days, beginners never 3 days in a row, rest days as asked. A literal 4-day full body week cannot avoid training the same muscles on consecutive days, so fb4 alternates its emphasis (quads and pushing, then hamstrings and pulling). */
-const GEN_T={
- fb2:{label:'Full body A/B',sessions:{A:{label:'Full body A',m:GEN_M.fa},B:{label:'Full body B',m:GEN_M.fb,v:1}},week:[[1,'A'],[4,'B']]},
- fb3:{label:'Full body A/B/A',sessions:{A:{label:'Full body A',m:GEN_M.fa},B:{label:'Full body B',m:GEN_M.fb,v:1}},week:[[1,'A'],[3,'B'],[5,'A']]},
- fb4:{label:'Full body, 4 days (alternating emphasis)',sessions:{X:{label:'Full body: quads and pushing',m:GEN_M.fx},Y:{label:'Full body: hamstrings and pulling',m:GEN_M.fy}},week:[[1,'X'],[2,'Y'],[4,'X'],[5,'Y']]},
- ul4:{label:'Upper/lower',sessions:{U:{label:'Upper',m:GEN_M.upper},L:{label:'Lower',m:GEN_M.lower}},week:[[1,'U'],[2,'L'],[4,'U'],[5,'L']]},
- ppl3:{label:'Push/pull/legs',sessions:{P:{label:'Push',m:GEN_M.push},Q:{label:'Pull',m:GEN_M.pull},L:{label:'Legs and glutes',m:GEN_M.lower}},week:[[1,'P'],[3,'Q'],[5,'L']]},
- ppl5:{label:'Push/pull/legs plus upper/lower',sessions:{P:{label:'Push',m:GEN_M.push},Q:{label:'Pull',m:GEN_M.pull},L:{label:'Legs and glutes',m:GEN_M.lower},U:{label:'Upper',m:GEN_M.upper,v:1},M:{label:'Legs and glutes 2',m:GEN_M.lower,v:1}},week:[[1,'P'],[2,'Q'],[3,'L'],[5,'U'],[6,'M']]},
- ppl6:{label:'Push/pull/legs, twice a week',sessions:{P:{label:'Push A',m:GEN_M.push},Q:{label:'Pull A',m:GEN_M.pull},L:{label:'Legs A',m:GEN_M.lower},P2:{label:'Push B',m:GEN_M.push,v:1},Q2:{label:'Pull B',m:GEN_M.pull,v:1},L2:{label:'Legs B',m:GEN_M.lower,v:1}},week:[[1,'P'],[2,'Q'],[3,'L'],[4,'P2'],[5,'Q2'],[6,'L2']]},
- up2:{label:'Upper A/B',sessions:{A:{label:'Upper A',m:GEN_M.upper},B:{label:'Upper B',m:GEN_M.upper,v:1}},week:[[1,'A'],[4,'B']]},
- up3:{label:'Upper A/B/A',sessions:{A:{label:'Upper A',m:GEN_M.upper},B:{label:'Upper B',m:GEN_M.upper,v:1}},week:[[1,'A'],[3,'B'],[5,'A']]},
- up4:{label:'Upper, pushing and pulling',sessions:{P:{label:'Upper: pushing',m:GEN_M.push},Q:{label:'Upper: pulling',m:GEN_M.pull},P2:{label:'Upper: pushing B',m:GEN_M.push,v:1},Q2:{label:'Upper: pulling B',m:GEN_M.pull,v:1}},week:[[1,'P'],[2,'Q'],[4,'P2'],[5,'Q2']]},
- upp3:{label:'Upper priority, light lower',sessions:{A:{label:'Upper A',m:GEN_M.upper},L:{label:'Lower, light',m:GEN_M.lower,light:true},B:{label:'Upper B',m:GEN_M.upper,v:1}},week:[[1,'A'],[3,'L'],[5,'B']]},
- upp4:{label:'Upper priority, light lower',sessions:{P:{label:'Upper: pushing',m:GEN_M.push},Q:{label:'Upper: pulling',m:GEN_M.pull},L:{label:'Lower, light',m:GEN_M.lower,light:true},U:{label:'Upper',m:GEN_M.upper,v:1}},week:[[1,'P'],[2,'Q'],[4,'L'],[5,'U']]},
- low2:{label:'Legs and glutes: quad day, hinge day',sessions:{Q:{label:'Legs: quad focus',m:GEN_M.lq},H:{label:'Legs: hinge and glute focus',m:GEN_M.lh}},week:[[1,'Q'],[4,'H']]},
- low3:{label:'Legs and glutes: quad, hinge, mixed',sessions:{Q:{label:'Legs: quad focus',m:GEN_M.lq},H:{label:'Legs: hinge and glute focus',m:GEN_M.lh},M:{label:'Legs: mixed',m:GEN_M.lower,v:1}},week:[[1,'Q'],[3,'H'],[5,'M']]},
- low4:{label:'Legs and glutes, 4 days',sessions:{Q:{label:'Legs: quad focus',m:GEN_M.lq},H:{label:'Legs: hinge and glute focus',m:GEN_M.lh},Q2:{label:'Legs: quad focus B',m:GEN_M.lq,v:1},H2:{label:'Legs: hinge and glute focus B',m:GEN_M.lh,v:1}},week:[[1,'Q'],[2,'H'],[4,'Q2'],[5,'H2']]},
- lowp3:{label:'Legs priority, light upper',sessions:{Q:{label:'Legs: quad focus',m:GEN_M.lq},U:{label:'Upper, light',m:GEN_M.upper,light:true},H:{label:'Legs: hinge and glute focus',m:GEN_M.lh}},week:[[1,'Q'],[3,'U'],[5,'H']]},
- lowp4:{label:'Legs priority, light upper',sessions:{Q:{label:'Legs: quad focus',m:GEN_M.lq},H:{label:'Legs: hinge and glute focus',m:GEN_M.lh},U:{label:'Upper, light',m:GEN_M.upper,light:true},M:{label:'Legs: mixed',m:GEN_M.lower,v:1}},week:[[1,'Q'],[2,'H'],[4,'U'],[6,'M']]}
-};
-Object.keys(GEN_T).forEach(k=>{GEN_T[k].id=k;});
-const GEN_KEY='liftlog_gen_v1';   /* the generator's own storage key. It never touches the app's key (ROADMAP 7.10) */
-/* ---------- gen-engine.js: the routine generator (ROADMAP Phase 7). EXPERIMENTAL, REMOVABLE. ----------
- Pure functions. A plan is built from the shared constants and the exercise library, and it never touches the app's own data: the only thing here that writes anything is genSave, and it writes the generator's own key. */
-const genDow=d=>new Date(d+'T12:00:00').getDay();
-const genDays=(a,b)=>Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);
-const genLabel=m=>(typeof MUSL!=='undefined'&&MUSL[m]?MUSL[m]:m).toLowerCase();
-const genCap0=s=>s.charAt(0).toUpperCase()+s.slice(1);
-const genClone=x=>JSON.parse(JSON.stringify(x));
-function genDaysRange(level,focus){const L=GEN.levels[level];if(!L)return[0,0];return[L.days[0],Math.min(L.days[1],focus==='full'?6:4)];}
-function genNorm(i){const o=Object.assign({sex:'skip',level:'beginner',goal:'muscle',focus:'full',scope:'only',days:3,rest:true,minutes:60,equip:'full',exclude:[],trial:'week'},i);
- o.days=+o.days;o.minutes=+o.minutes;o.exclude=(o.exclude||[]).slice();o.scope=o.focus!=='full'&&o.scope==='priority'&&o.days>=3?'priority':'only';return o;}
-function genValidate(i){const e=[];
- if(!GEN.levels[i.level])e.push('level must be one of '+Object.keys(GEN.levels).join(', '));
- if(!GEN.goals[i.goal])e.push('goal must be one of '+Object.keys(GEN.goals).join(', '));
- if(!GEN.focus[i.focus])e.push('focus must be one of '+Object.keys(GEN.focus).join(', '));
- if(!GEN.sexEmph[i.sex])e.push('sex must be one of '+Object.keys(GEN.sexEmph).join(', '));
- if(!GEN.equip[i.equip])e.push('equip must be one of '+Object.keys(GEN.equip).join(', '));
- if(!GEN.minutes.includes(i.minutes))e.push('minutes must be one of '+GEN.minutes.join(', '));
- if(!GEN.trials[i.trial])e.push('trial must be one of '+Object.keys(GEN.trials).join(', '));
- if(!e.length){const r=genDaysRange(i.level,i.focus);if(!(i.days>=r[0]&&i.days<=r[1]))e.push('days must be '+r[0]+' to '+r[1]+' for '+i.level+' ('+i.focus+')');}
- return{ok:!e.length,errors:e};}
-function genPickTemplate(i){const d=i.days;
- if(i.focus==='full')return GEN_T[d===2?'fb2':d===3?(i.level==='advanced'?'ppl3':'fb3'):d===4?(i.goal==='fitness'?'fb4':'ul4'):d===5?'ppl5':'ppl6'];
- return GEN_T[(i.focus==='upper'?'up':'low')+(i.scope==='priority'?'p':'')+d];}
-/* weekly hard sets per muscle: the existing usual range's low end, scaled by level (and by sex for full body), never below the usual minimum or above the usual high end. A light session gets maintenance volume, the usual minimum. */
-function genTargets(i,t){const lm=GEN.levels[i.level].mult,ses=Object.values(t.sessions),heavy=new Set(ses.filter(s=>!s.light).flatMap(s=>s.m)),out={};
- new Set(ses.flatMap(s=>s.m)).forEach(m=>{const mv=MV[m];if(heavy.has(m)){const reg=GEN.region.upper.includes(m)?'upper':'lower',se=i.focus==='full'?GEN.sexEmph[i.sex][reg]:1;out[m]=Math.round(Math.min(mv.hi,Math.max(mv.min,mv.lo*lm*se)));}else out[m]=mv.min;});
- return out;}
-/* the prescription: sets, reps and rest come from the shared category table with the goal and level modifiers. Nothing is invented here. */
-function genRx(id,i){const meta=LIB_META[id],cat=CATEGORIES[meta.cat],gm=(GOAL_MOD[i.goal]||{})[meta.cat]||{},lm=LEVEL_MOD[i.level]||{};
- let sets=i.level==='beginner'?cat.sets[0]:i.level==='advanced'?cat.sets[1]:Math.round((cat.sets[0]+cat.sets[1])/2);
- if(lm.setsMax)sets=Math.min(sets,lm.setsMax);sets+=gm.setsDelta||0;sets=Math.max(cat.allowSets[0],Math.min(cat.allowSets[1],sets));
- let reps=(gm.reps||cat.reps).slice();if(gm.dumbbellFloor&&meta.tag==='dumbbell')reps[0]=Math.max(reps[0],gm.dumbbellFloor);
- reps=[Math.max(cat.allowReps[0],reps[0]),Math.min(cat.allowReps[1],reps[1])];if(reps[0]>reps[1])reps[0]=reps[1];
- return{cat:meta.cat,sets,reps,rest:gm.restUp?cat.rest[1]:cat.rest[0],rir:GEN.levels[i.level].rir.slice()};}
-function genSeconds(ex){return ex.reduce((a,e)=>{const mid=(e.reps[0]+e.reps[1])/2,work=e.cat==='timed_hold'?mid:mid*GEN.time.tutPerRep;return a+e.sets*(work+e.rest)+GEN.time.transition;},0);}
-const genEstimate=s=>Math.round(genSeconds(s.exercises)/60);
-function genOk(i,x){const m=LIB_META[x.id];if(!m)return false;const eq=GEN.equip[i.equip];
- if(eq.eq&&!eq.eq.includes(x.eq))return false;if(!eq.bench&&m.needs==='bench')return false;
- if(i.level==='beginner'&&m.skill==='advanced')return false;
- if(i.exclude.some(e=>e===x.id||e===m.pattern))return false;return true;}
-/* The lifts the app already suggests in its own routines (any level, any days). Read from routineFor, so the generator never keeps a second list of good lifts. */
-const genCore=()=>{if(!GEN.core){const s=new Set();['beginner','intermediate','advanced'].forEach(l=>[2,3,4,5,6].forEach(d=>{try{Object.values(routineFor(l,d).tpl).forEach(a=>a.forEach(id=>s.add(id)));}catch(e){}}));GEN.core=[...s].sort();}return GEN.core;};
-function genPool(i,m){const pref=GEN.pref[i.level]||{},pr=x=>pref[x.eq]==null?3:pref[x.eq],core=new Set(genCore()),cr=x=>core.has(x.id)?0:1;
- return EX.filter(x=>x.p===m&&genOk(i,x)).sort((a,b)=>cr(a)-cr(b)||pr(a)-pr(b)||(LIB_META[a.id].conf==='h'?0:1)-(LIB_META[b.id].conf==='h'?0:1)||(a.id<b.id?-1:1));}
-const genEntry=(id,rx,sets)=>({id,name:E[id].name,m:E[id].p,cat:rx.cat,sets,reps:rx.reps,rest:rx.rest,rir:rx.rir});
-function genSession(i,t,sid,tg,cnt,wk){const S0=t.sessions[sid],v=S0.v||0,cap=Math.floor(i.minutes*(1+GEN.tolerance)+1e-9)*60   /* whole minutes, so the rounded estimate can never exceed its own cap */,want={};
- S0.m.forEach(m=>{const n=cnt[m]||1;let w=Math.ceil(tg[m]/n);while(w>2&&w*n>MV[m].hi)w--;want[m]=S0.light?GEN.light.sets:Math.max(2,Math.min(MV[m].ses,w));});
- const order=S0.m.map((m,x)=>[m,x]).sort((a,b)=>want[b[0]]-want[a[0]]||a[1]-b[1]).map(x=>x[0]),pools={};order.forEach(m=>{pools[m]=genPool(i,m);});
- const cover=order.map((m,x)=>[m,x]).sort((a,b)=>(tg[b[0]]-(wk[b[0]]||0))-(tg[a[0]]-(wk[a[0]]||0))||a[1]-b[1]).map(x=>x[0]);   /* when time is short, the muscles furthest below their weekly target come first, counting what earlier sessions already placed */
- const used=new Set(),pats=new Set(),ex=[],placed={},maxN=GEN.maxPerMuscle[i.level]+(S0.m.length<=GEN.fewMuscles?1:0),pat=x=>LIB_META[x.id].pattern;   /* a session that trains only one or two muscles may use one more exercise on each, or it cannot fill its time */
- const tryAdd=(m,needCompound)=>{const left=want[m]-(placed[m]||0),n0=ex.filter(e=>e.m===m).length;if(left<(n0?2:1)||n0>=maxN)return false;
-  const c=pools[m].filter(x=>!used.has(x.id)),fresh=x=>pat(x)==='isolation'||!pats.has(pat(x)),cp=x=>x.k==='c',ip=x=>x.k==='i';
-  const tiers=needCompound?[c.filter(x=>cp(x)&&fresh(x)),c.filter(cp)]:n0===0?[c.filter(x=>cp(x)&&fresh(x)),c.filter(fresh),c.filter(cp),c]:[c.filter(x=>ip(x)&&fresh(x)),c.filter(fresh),c.filter(ip),c];
-  const use=(i.level==='beginner'?tiers.slice(0,needCompound?1:2):tiers).find(t=>t.length)||[];if(!use.length)return false;   /* beginners never repeat a pattern, and still fall back to an isolation exercise when every compound repeats one */
-  const core=new Set(genCore()),pref=use.filter(y=>core.has(y.id)),base=pref.length?pref:use,x=base[(n0===0?v:0)%base.length],rx=genRx(x.id,i);let s=Math.min(rx.sets,left);if(left-s===1&&n0+1<maxN+1&&s<CATEGORIES[rx.cat].allowSets[1])s++;   /* never leave a lone orphan set that no exercise could take */
-  if(n0===0)while(s>CATEGORIES[rx.cat].allowSets[0]&&genSeconds([...ex,genEntry(x.id,rx,s)])>cap)s--;   /* coverage first: shrink a muscle's first exercise toward the table's minimum before dropping the muscle */
-  const e=genEntry(x.id,rx,s);if(genSeconds([...ex,e])>cap)return false;
-  ex.push(e);used.add(x.id);pats.add(pat(x));placed[m]=(placed[m]||0)+e.sets;return true;};
- const lead=order.find(m=>pools[m].some(x=>x.k==='c'));if(lead)tryAdd(lead,true);
- cover.forEach(m=>{if(!ex.some(e=>e.m===m))tryAdd(m,false);});
- for(let go=true,guard=0;go&&guard<8;guard++){go=false;cover.forEach(m=>{if(tryAdd(m,false))go=true;});}
- /* top up: a muscle still below its session target gets another set on its main exercise, up to the category table's own maximum, while the session time allows. Fills the time that the per-muscle exercise cap leaves unused. */
- for(let go=true,guard=0;go&&guard<24;guard++){go=false;cover.forEach(m=>{if(want[m]-(placed[m]||0)<1)return;const e=ex.filter(x=>x.m===m).sort((a,b)=>(E[b.id].k==='c'?1:0)-(E[a.id].k==='c'?1:0))[0];if(!e||e.sets>=CATEGORIES[e.cat].allowSets[1])return;e.sets++;if(genSeconds(ex)>cap){e.sets--;return;}placed[m]=(placed[m]||0)+1;go=true;});}
- const comp=ex.filter(e=>LIB_META[e.id]&&E[e.id].k==='c'),iso=ex.filter(e=>E[e.id].k!=='c');
- return comp.concat(iso);}
-function genFinish(p){const sets={};p.sessions.forEach(s=>{s.minutes=genEstimate(s);s.exercises.forEach(e=>{sets[e.m]=(sets[e.m]||0)+e.sets;});});
- const sum=a=>a.reduce((x,m)=>x+(sets[m]||0),0),push=sum(GEN_M.push),pull=sum(GEN_M.pull),hinge=sum(['hamstrings','glutes']),quad=sets.quads||0;
- p.weekly={sets,push,pull};p.balance={pushPull:push&&pull?+(push/pull).toFixed(2):null,quadHinge:quad&&hinge?+(quad/hinge).toFixed(2):null};
- const w=[],T=GEN_T[p.template.id],lightOnly=m=>T.week.every(x=>!T.sessions[x[1]].m.includes(m)||T.sessions[x[1]].light),heavy=a=>a.some(m=>sets[m]&&!lightOnly(m));   /* a muscle trained only in a light maintenance session is not judged for balance */
- p.targeted.forEach(m=>{const n=sets[m]||0;if(!n)w.push(genPool(p.inputs,m).length?genCap0(genLabel(m))+' did not fit in the session time. A longer session or more days would add it.':'No '+genLabel(m)+' exercise fits your equipment and exclusions.');else if(n<MV[m].min&&!T.week.every(x=>!T.sessions[x[1]].m.includes(m)||T.sessions[x[1]].light))w.push(genLabel(m).charAt(0).toUpperCase()+genLabel(m).slice(1)+' gets '+n+' hard sets a week, below the usual minimum of '+MV[m].min+'. A longer session or more days would fix that.');
-  const planned=T.week.filter(x=>T.sessions[x[1]].m.includes(m)).length,hit=p.sessions.filter(s=>s.exercises.some(e=>e.m===m)).length;if(planned>=2&&hit<2&&n)w.push('Only '+hit+' of the '+planned+' sessions that should train '+genLabel(m)+' fit it in.');});
- const[pl,ph]=GEN.balance.pushPull,[ql,qh]=GEN.balance.quadHinge;
- if(p.balance.pushPull!=null&&heavy(GEN_M.push)&&heavy(GEN_M.pull)&&(p.balance.pushPull<pl||p.balance.pushPull>ph))w.push('Pushing and pulling are out of balance ('+push+' push to '+pull+' pull sets a week).');
- if(p.balance.quadHinge!=null&&heavy(['quads'])&&heavy(['hamstrings','glutes'])&&(p.balance.quadHinge<ql||p.balance.quadHinge>qh))w.push('Quads and hips are out of balance ('+quad+' quad to '+hinge+' hamstring and glute sets a week).');
- p.warnings=w;return p;}
-function genPlan(i0){const i=genNorm(i0),v=genValidate(i);if(!v.ok)throw new Error(v.errors.join('; '));
- const t=genPickTemplate(i),tg=genTargets(i,t),cnt={};t.week.forEach(x=>t.sessions[x[1]].m.forEach(m=>{cnt[m]=(cnt[m]||0)+1;}));
- const built={},wk={},times={};t.week.forEach(x=>{times[x[1]]=(times[x[1]]||0)+1;});Object.keys(t.sessions).forEach(sid=>{built[sid]=genSession(i,t,sid,tg,cnt,wk);built[sid].forEach(e=>{wk[e.m]=(wk[e.m]||0)+e.sets*times[sid];});});
- const sessions=t.week.map(x=>{const S0=t.sessions[x[1]];return{id:x[1],label:S0.label,dow:x[0],light:!!S0.light,exercises:genClone(built[x[1]]),minutes:0};});
- return genFinish({v:1,inputs:i,template:{id:t.id,label:t.label},scope:i.scope,targeted:Object.keys(tg),sessions,calibration:GEN.calibration,experimental:true});}
-function genSwapOptions(p,si,ei){const i=p.inputs,e=p.sessions[si].exercises[ei],cat=LIB_META[e.id].cat,have=new Set(p.sessions[si].exercises.map(x=>x.id));
- return genPool(i,E[e.id].p).filter(x=>LIB_META[x.id].cat===cat&&!have.has(x.id)).map(x=>x.id);}
-function genSwap(p,si,ei,id){const q=genClone(p),old=q.sessions[si].exercises[ei];q.sessions[si].exercises[ei]=Object.assign(genEntry(id,genRx(id,q.inputs),old.sets),{reps:old.reps,rest:old.rest,rir:old.rir});return genFinish(q);}
-function genDeloadWeek(level,trial,w){if(trial==='month')return w===GEN.deload.monthWeek&&GEN.deload.monthLevels.includes(level);if(trial==='indefinite')return(w+1)%GEN.deload.every[level]===0;return false;}
-function genDeloadEx(ex){return ex.map(e=>Object.assign(genClone(e),{sets:Math.max(1,Math.round(e.sets*GEN.deload.share)),rir:[e.rir[0]+GEN.deload.rirShift,e.rir[1]+GEN.deload.rirShift]}));}
-/* The dated sessions of a trial. Week one is the seven days from the start date, so each weekday appears once; later weeks repeat it. */
-function genSchedule(p,start,trial){const T=GEN.trials[trial],lv=p.inputs.level,first=p.sessions.map((s,idx)=>{let k=0;while(genDow(addDays(start,k))!==s.dow)k++;return{idx,off:k};}).sort((a,b)=>a.off-b.off),out=[];let n=0;
- for(let w=0;w<T.weeks;w++){const dl=genDeloadWeek(lv,trial,w);first.forEach((f,j)=>{const s=p.sessions[f.idx];out.push({n:n++,date:addDays(start,f.off+7*w),week:w,sid:s.id,idx:f.idx,label:s.label,deload:dl,review:trial==='indefinite'&&w===GEN.deload.reviewWeek-1&&j===0,exercises:dl?genDeloadEx(s.exercises):genClone(s.exercises)});});}
- return trial==='day'?out.slice(0,1):out;}
-/* What the insight engine reads: is this date inside a planned deload week? */
-function genIsDeload(p,start,trial,date){const T=GEN.trials[trial],d=genDays(start,date);return d>=0&&d<7*T.weeks&&genDeloadWeek(p.inputs.level,trial,Math.floor(d/7));}
-/* Storage: one separate key, never the app's own. A corrupt value is never overwritten, and nothing is ever deleted: archiving only marks a plan. */
-/* The plan in use, cached because the insight engine asks about every logged session. Any write to the generator's key clears it. */
-const genActive=()=>{if(GEN.act===undefined){const db=genLoad();GEN.act=db.plans.find(p=>p.applied&&p.state==='active')||null;}return GEN.act;};
-function genLoad(st){st=st||localStorage;let raw=null;try{raw=st.getItem(GEN_KEY);}catch(e){return{v:1,plans:[],corrupt:true};}
- if(raw==null)return{v:1,plans:[]};try{const db=JSON.parse(raw);return db&&db.v===1&&Array.isArray(db.plans)?db:{v:1,plans:[],corrupt:true};}catch(e){return{v:1,plans:[],corrupt:true};}}
-function genSave(p,start,trial,st){st=st||localStorage;const db=genLoad(st);if(db.corrupt)return null;const id='g'+(db.plans.length+1)+'-'+start;
- db.plans.push({id,created:iso(),start,trial,state:'active',plan:p});try{st.setItem(GEN_KEY,JSON.stringify(db));}catch(e){return null;}GEN.act=undefined;return id;}
-function genArchive(id,st){st=st||localStorage;const db=genLoad(st);if(db.corrupt)return false;const q=db.plans.find(x=>x.id===id);if(!q)return false;q.state='archived';q.archivedAt=iso();try{st.setItem(GEN_KEY,JSON.stringify(db));}catch(e){return false;}GEN.act=undefined;return true;}
-/* ---------- gen-ui.js: the routine generator's screens (ROADMAP 7.9). EXPERIMENTAL, REMOVABLE. ----------
- It plugs in through DEVTOOLS (ui/logic.js) and the core never names anything here. Preview only: nothing is saved until the person taps Save, and what is saved goes to the generator's own key. */
-const GEN_DOW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const GEN_NOTE='Experimental. Not medical advice. Stop if something hurts.';
-const genCap=s=>s.charAt(0).toUpperCase()+s.slice(1);
-function genNew(){return{step:0,inp:{sex:'skip',level:'beginner',goal:'muscle',focus:'full',scope:'only',days:3,rest:true,minutes:60,equip:'full',exclude:[],trial:'week'},start:null,saved:null,swaps:{},plan:null,err:null};}
-function genQs(inp){const r=genDaysRange(inp.level,inp.focus),days=[];for(let d=r[0];d<=r[1];d++)days.push([d,d+' days','']);
- const q=[{k:'sex',t:'Sex',help:'Used only as a default emphasis for a full body program (a little more lower body for female, a little more upper body for male). If you pick a focus, it has no effect. Skip is neutral.',opts:Object.keys(GEN.sexes).map(v=>[v,GEN.sexes[v],''])},
- {k:'level',t:'Experience',help:'Pick the closest one. The descriptions are a draft.',opts:Object.keys(GEN.levels).map(v=>[v,GEN.levels[v].label,GEN.levels[v].desc])},
- {k:'goal',t:'Goal',help:'This changes the reps and rest, from the same tables the rest of the app uses.',opts:Object.keys(GEN.goals).map(v=>[v,GEN.goals[v],''])},
- {k:'focus',t:'Focus',help:'Focus means priority.',opts:Object.keys(GEN.focus).map(v=>[v,GEN.focus[v],''])}];
- if(inp.focus!=='full')q.push({k:'scope',t:'How much focus?',help:'Only that region, or that region as the priority with a light session for the rest.',opts:[['only','Only '+(inp.focus==='upper'?'upper body':'legs and glutes'),'Every session trains that region.'],['priority','That region as priority, with a light session for the rest','Needs at least 3 days a week.']]});
- q.push({k:'days',t:'Days per week',help:'The limits depend on your level and focus.',opts:days});
- q.push({k:'rest',t:'Rest days',help:'Would you like rest days built in? That means at least 2 full rest days a week for 4 or fewer sessions, and at least 1 for 5 or more.',opts:[[true,'Yes, build rest days in',''],[false,'No preference','']]});
- q.push({k:'minutes',t:'Session length',help:'The plan is trimmed or filled to fit.',opts:GEN.minutes.map(m=>[m,m+' minutes',''])});
- q.push({k:'equip',t:'Equipment',help:'Dumbbells and bodyweight only leaves out anything that needs a bench.',opts:Object.keys(GEN.equip).map(v=>[v,GEN.equip[v].label,''])});
- q.push({k:'exclude',t:'Anything to avoid?',help:'Pick any movements to leave out, or none. You can also swap any single exercise in the preview.',multi:true,opts:GEN.patterns.map(p=>[p,genCap(p),''])});
- q.push({k:'trial',t:'Trial length',help:'A day is one session. A week is one pass through the plan. A month is four weeks (with a lighter week 4 for intermediate and advanced). Indefinitely is a rolling plan with a lighter week every few weeks.',opts:Object.keys(GEN.trials).map(v=>[v,GEN.trials[v].label,''])});
- return q;}
-const genOpt=(q,v,l,d,on)=>`<button class="cp${on?' on':''}" data-act="genpick" data-k="${q.k}" data-v="${esc(String(v))}" style="display:block;width:100%;height:auto;min-height:44px;text-align:left;padding:12px 16px;margin-bottom:8px"><b>${esc(l)}</b>${d?`<span class="sm" style="display:block;font-weight:400;margin-top:2px;color:inherit">${esc(d)}</span>`:''}</button>`;
-function genDefaultStart(p){const t=iso();for(let k=0;k<7;k++){const d=addDays(t,k);if(genDow(d)===p.sessions[0].dow)return d;}return t;}
-function genTrialBlock(g,p){const start=g.start||genDefaultStart(p),sc=genSchedule(p,start,g.inp.trial),T=GEN.trials[g.inp.trial],lt=[...new Set(sc.filter(x=>x.deload).map(x=>x.week+1))];
- const note=g.inp.trial==='day'?'One session, no schedule.':T.weeks+(T.weeks===1?' week':' weeks')+(g.inp.trial==='indefinite'?' shown of a rolling plan':'')+(lt.length?'. Planned lighter week: week '+lt.join(', week ')+' (about half the sets, easier effort).':'.');
- return`<div class="blk"><h3>Your first week</h3>${sc.filter(x=>x.week===0).map(x=>`<div class="ref"><span>${esc(fmtD(x.date,'dm'))}</span><span>${esc(x.label)}</span></div>`).join('')}<p class="muted sm" style="margin-top:8px">${esc(note)}</p></div>`;}
-function genPreview(g){const p=g.plan;
- if(!p)return head('Your plan (experimental)','')+`<div class="blk"><h3>That plan could not be built</h3><p class="muted">${esc(g.err||'Something went wrong.')}</p></div><div class="ft"><button class="btn" data-act="genback">Back</button></div>`;
- const rx=e=>e.sets+' x '+e.reps[0]+(e.reps[1]!==e.reps[0]?'-'+e.reps[1]:'')+(e.cat==='timed_hold'?' sec':''),first=genDefaultStart(p),T=GEN.trials[g.inp.trial];
- const sess=p.sessions.map((s,si)=>`<div class="blk"><h3>${GEN_DOW[s.dow]}: ${esc(s.label)}</h3><p class="muted sm" style="margin:0 0 8px">About ${s.minutes} minutes${s.light?', a light session':''}</p>${s.exercises.map((e,ei)=>`<div class="ref"><span>${esc(e.name)}</span><span>${rx(e)}, rest ${e.rest}s</span></div><div style="text-align:right;margin:0 0 6px"><button class="btn sm" data-act="genswap" data-s="${si}" data-e="${ei}">Swap</button></div>`).join('')}</div>`).join('');
- const wk=p.targeted.map(m=>`<div class="ref"><span>${esc(genCap(genLabel(m)))}</span><span>${p.weekly.sets[m]||0} sets (usual ${MV[m].lo} to ${MV[m].hi})</span></div>`).join('');
- const dates=[...new Set([first,iso()])];
- const foot=g.saved?`<div class="blk"><h3>Saved</h3><p class="muted">Saved as a separate plan. It does not change your routine or your logs, and Today and Week still show your own routine. You can archive it from Settings.</p></div><div class="ft"><button class="btn pri" data-act="close">Done</button></div>`
-  :`<div class="blk"><h3>Start</h3><div class="cg">${dates.map(d=>`<button class="cp${(g.start||first)===d?' on':''}" data-act="genstart" data-v="${d}">${d===iso()?'Today':fmtD(d,'dm')}</button>`).join('')}</div><p class="muted sm" style="margin-top:8px">${esc(T.label)}. Saving keeps this plan separate from your routine.</p></div><div class="ft"><button class="btn" data-act="genback">Back</button><button class="btn pri" data-act="gensave">Save this plan</button></div>`;
- return head('Your plan (experimental)',p.template.label+', '+p.sessions.length+' days a week')+`<p class="muted sm" style="margin:0 0 12px">${GEN_NOTE}</p>`
-  +(p.warnings.length?`<div class="blk"><h3>Worth knowing</h3>${p.warnings.map(w=>`<p class="muted sm" style="margin:0 0 6px">${esc(w)}</p>`).join('')}</div>`:'')
-  +sess+`<div class="blk"><h3>Weekly hard sets</h3>${wk}</div><div class="blk"><h3>Week one</h3><p class="muted">${esc(p.calibration)}</p></div>`+genTrialBlock(g,p)+foot;}
-function sheetGen(s){const g=ui.gen||(ui.gen=genNew()),qs=genQs(g.inp);
- if(g.step>=qs.length)return genPreview(g);
- const q=qs[g.step],cur=g.inp[q.k];
- return head('Build me a routine (experimental)','Question '+(g.step+1)+' of '+qs.length)+`<p class="muted sm" style="margin:0 0 12px">${GEN_NOTE}</p><div class="blk"><h3>${esc(q.t)}</h3><p class="muted" style="margin:0 0 12px">${esc(q.help)}</p>${q.opts.map(([v,l,d])=>genOpt(q,v,l,d,q.multi?cur.includes(v):String(cur)===String(v))).join('')}</div><div class="ft">${g.step>0?'<button class="btn" data-act="genback">Back</button>':''}<button class="btn pri" data-act="gennext">${g.step===qs.length-1?'See my plan':'Continue'}</button></div>`;}
-/* ---------- running a saved plan (G-1) ---------- */
-function genWrite(db){try{localStorage.setItem(GEN_KEY,JSON.stringify(db));}catch(e){return false;}GEN.act=undefined;return true;}
-/* Use a saved plan as the routine. The routine, and the sets and reps of these lifts, are replaced; logs, weights and days are not touched. A snapshot is taken first, and nothing changes if the plan cannot be recorded as in use. */
-function genApply(id){const db=genLoad();if(db.corrupt)return false;const q=db.plans.find(x=>x.id===id);if(!q||q.state!=='active')return false;
- takeSnapshot('before generated routine');
- db.plans.forEach(p=>{delete p.applied;});q.applied=iso();if(!genWrite(db))return false;
- const tpl={};for(let d=0;d<7;d++)tpl[d]=[];q.plan.sessions.forEach(s=>{tpl[s.dow]=s.exercises.map(e=>e.id);});
- applyRoutine({tpl,core:S.plan.core});
- q.plan.sessions.forEach(s=>s.exercises.forEach(e=>{const c=S.cfg[e.id]||(S.cfg[e.id]={});c.sets=e.sets;c.reps=e.reps[0]===e.reps[1]?String(e.reps[0]):e.reps[0]+'-'+e.reps[1];}));
- save();return true;}
-/* Sessions against planned, from the day the plan was put in use. A trial ends after its last scheduled session; indefinite never does. */
-function genSummaryOf(q,today){const sc=genSchedule(q.plan,q.start,q.trial),end=q.trial==='indefinite'?null:sc[sc.length-1].date,from=q.applied&&q.applied>q.start?q.applied:q.start,due=sc.filter(x=>x.date>=from&&x.date<=today&&(!end||x.date<=end));
- return{planned:due.length,done:due.filter(x=>isWorkDay(x.date)).length,prs:prEvents().filter(p=>p.d>=from&&p.d<=today&&(!end||p.d<=end)).length,over:!!end&&today>end};}
-const genPl=(n,w)=>n+' '+w+(n===1?'':'s');
-function genNote(date){const q=genActive();if(!q)return'';
- if(genIsDeload(q.plan,q.start,q.trial,date))return`<section class="tile t2"><h3>Planned lighter week</h3><p class="muted" style="margin:4px 0 0">This week of your plan is lighter on purpose. Do about half the sets of each lift and keep it easy. The app leaves this week out of your strength trend.</p></section>`;
- if(date===iso()&&genSummaryOf(q,iso()).over)return`<section class="tile t2"><h3>Your trial has ended</h3><p class="muted" style="margin:4px 0 0">See how it went, and choose what happens next.</p><div class="ft"><button class="btn" data-act="tab" data-v="set">Open Settings</button></div></section>`;
- return'';}
-const genTile=()=>{const db=genLoad(),act=db.plans.filter(p=>p.state==='active'),arch=db.plans.length-act.length;
- const row=p=>{const lab=esc(p.plan.template.label)+', from '+esc(fmtD(p.start,'dm'));
-  if(!p.applied)return`<div class="ref" style="margin-top:8px"><span>${lab}</span></div><div class="ft"><button class="btn sm" data-act="genuse" data-id="${esc(p.id)}">Use as my routine</button><button class="btn sm" data-act="genarchive" data-id="${esc(p.id)}">Archive</button></div>`;
-  const s=genSummaryOf(p,iso());
-  return`<div class="ref" style="margin-top:8px"><span>In use: ${lab}</span></div><p class="muted sm" style="margin:6px 0 0">${s.over?`Trial finished: ${s.done} of ${genPl(s.planned,'session')}, ${genPl(s.prs,'record')}.`:`${s.done} of ${genPl(s.planned,'session')} so far.`}</p><div class="ft">${s.over?`<button class="btn sm" data-act="genrepeat" data-id="${esc(p.id)}">Repeat</button><button class="btn sm" data-act="genchange" data-id="${esc(p.id)}">Change settings</button>`:''}<button class="btn sm" data-act="genstop" data-id="${esc(p.id)}">Stop</button></div>`;};
- return`<section class="tile t2"><h3>Build me a routine (experimental)</h3><p class="muted" style="margin:4px 0 0">Answer a few questions and preview a week that spaces your muscle groups out. A saved plan changes nothing until you choose Use as my routine, and your logs are never touched. ${GEN_NOTE}</p><div class="ft"><button class="btn pri" data-act="genopen">Build me a routine</button></div>${db.corrupt?'<p class="muted sm" style="margin-top:8px">Saved plans could not be read, so nothing new will be saved until that is fixed.</p>':''}${act.map(row).join('')}${arch?`<p class="muted sm" style="margin-top:8px">${arch} archived</p>`:''}</section>`;};
-DEVTOOLS.tiles.push(['Routine generator',genTile]);
-DEVTOOLS.sheets.gen=sheetGen;
-DEVTOOLS.notes.push(genNote);
-hooks.plannedDeload=d=>{const q=genActive();return!!q&&genIsDeload(q.plan,q.start,q.trial,d);};
-Object.assign(DEVTOOLS.actions,{
- genopen:()=>{ui.gen=genNew();pushSheet({t:'gen'});},
- genpick:d=>{const g=ui.gen,k=d.k,v=d.v;if(k==='exclude'){const a=g.inp.exclude,i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);}else g.inp[k]=k==='days'||k==='minutes'?+v:k==='rest'?v==='true':v;
-  const r=genDaysRange(g.inp.level,g.inp.focus);g.inp.days=Math.min(Math.max(g.inp.days,r[0]),r[1]);if(g.inp.focus==='full')g.inp.scope='only';g.plan=null;},
- gennext:()=>{const g=ui.gen,n=genQs(g.inp).length;g.step=Math.min(n,g.step+1);if(g.step===n){try{g.plan=genPlan(g.inp);g.err=null;g.start=g.start||genDefaultStart(g.plan);}catch(e){g.plan=null;g.err=e.message;}}},
- genback:()=>{const g=ui.gen;g.step=Math.max(0,g.step-1);g.saved=null;},
- genswap:d=>{const g=ui.gen,s=+d.s,e=+d.e,o=genSwapOptions(g.plan,s,e);if(!o.length){toast('No other exercise fits here');return;}const key=s+'.'+e,k=g.swaps[key]||0;g.swaps[key]=k+1;g.plan=genSwap(g.plan,s,e,o[k%o.length]);},
- genstart:d=>{ui.gen.start=d.v;},
- gensave:()=>{const g=ui.gen,id=genSave(g.plan,g.start||genDefaultStart(g.plan),g.inp.trial);if(id)g.saved=id;else toast('Could not save the plan');},
- genarchive:d=>{if(!genArchive(d.id))toast('Could not archive the plan');save();},
- genuse:d=>ask('Use this plan as your routine?','Your routine is saved first, and you can bring it back from Settings. Your logs and weights are not touched. The sets and reps for these lifts are replaced, and any lift you have not set a weight for will ask for one.','Use this plan',()=>{if(!genApply(d.id))toast('Could not use that plan');}),
- genrepeat:d=>{const db=genLoad(),q=db.plans.find(x=>x.id===d.id);if(!q||db.corrupt)return;q.start=genDefaultStart(q.plan);q.applied=iso();if(!genWrite(db))toast('Could not save');save();},
- genchange:d=>{const q=genLoad().plans.find(x=>x.id===d.id);if(!q)return;ui.gen=genNew();Object.assign(ui.gen.inp,q.plan.inputs);ui.gen.step=0;pushSheet({t:'gen'});},
- genstop:d=>{const db=genLoad(),q=db.plans.find(x=>x.id===d.id);if(!q||db.corrupt)return;q.state='archived';q.archivedAt=iso();delete q.applied;if(!genWrite(db))toast('Could not stop the plan');save();}});
 
 /* ---------- render ---------- */
 const VIEWS={today:viewToday,week:viewWeek,stats:viewStats,lib:viewLib,set:viewSet};
@@ -3053,6 +2769,10 @@ function act0(a,el){const d=el.dataset,id=d.id,l=d.l;ui.focus=false;
   case 'sudays':ui.su.days=+d.v;break;
   case 'sucreate':{const go=()=>{applyRoutine(routineFor(ui.su.level,ui.su.days));ui.su.step='build';};if(Object.values(S.tpl).some(a=>a.length))ask('Replace your routine?','This suggestion replaces the workouts you have now.','Replace',go);else go();break;}
   case 'suback':ui.su.step=d.v;break;
+  case 'scrcheck':scrShow();break;
+  case 'scrclose':{const o=$('#scr');if(o)o.remove();break;}
+  case 'scrmeasure':scrMeasure();break;
+  case 'scrreset':scrReset();break;
   case 'suday':suOpenDay(d.d);break;
   case 'susave':suSaveDay();break;
   case 'supick':{const a=ui.su.sel,i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);break;}
@@ -3083,15 +2803,23 @@ document.addEventListener('click',e=>{if(Date.now()-ui.noClick<80)return;
 const el=e.target.closest('[data-act]');if(!el||el.disabled)return;if(el.dataset.act==='ov'&&e.target!==el)return;act(el.dataset.act,el);});
 document.addEventListener('change',e=>{const el=e.target,k=el.dataset&&el.dataset.k;if(!k)return;if(k==='e'){ui.lib.e=el.value;libUpdate();}else if(k==='m'){ui.lib.m=el.value;libUpdate();}else if(k==='lift'){ui.st.lift=el.value;refreshTile('strength',strengthTile);}else if(k==='name'){S.name=el.value.trim();save();render();}});
 document.addEventListener('input',e=>{if(e.target.id==='suname'&&ui.su)ui.su.name=e.target.value;if(e.target.classList.contains('lq')){ui.lib.q=e.target.value;$$('.libList').forEach(x=>x.innerHTML=libRows(x.dataset.ctx||null));}});
+/* ---------- Screen check (Settings) ----------
+ Measures the real screen on this phone and draws three edge lines: red is the bottom of the page, blue the bottom of the screen, green the bottom of 100lvh. Any line you cannot see is not drawn by the phone.
+ It changes nothing and stores nothing. "Try viewport reset" briefly rewrites the viewport tag and puts it back, to see whether the numbers change. */
+function scrMeasure(){const px=(css)=>{const e=document.createElement('div');e.style.cssText='position:fixed;left:0;top:0;width:1px;visibility:hidden;pointer-events:none;'+css;document.body.appendChild(e);const n=e.offsetHeight,p=getComputedStyle(e);const t=parseFloat(p.paddingTop)||0,b=parseFloat(p.paddingBottom)||0;e.remove();return[n,t,b];};
+ const ins=px('padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)'),v=window.visualViewport,r=document.documentElement;
+ const m={inner:[innerWidth,innerHeight],vv:v?[Math.round(v.height),Math.round(v.offsetTop)]:null,client:[r.clientWidth,r.clientHeight],screen:[screen.width,screen.height],outer:[outerWidth,outerHeight],vh:px('height:100vh')[0],svh:px('height:100svh')[0],lvh:px('height:100lvh')[0],dvh:px('height:100dvh')[0],top:ins[1],bottom:ins[2],standalone:navigator.standalone===true};
+ const el=$('#scr-rows');if(el)el.innerHTML=screenRows(m).map(([k,x])=>`<div class="scr-r"><span>${esc(k)}</span><b>${esc(x)}</b></div>`).join('');const sc=$('#scr-sc');if(sc)sc.style.top=(screen.height-4)+'px';}
+function scrShow(){if($('#scr'))return;const o=document.createElement('div');o.id='scr';
+ o.innerHTML=`<h2>Screen check</h2><p class="muted sm">Red line: bottom of the page. Blue line: bottom of the screen. Green line: bottom of 100lvh. Send a screenshot of this screen.</p><div id="scr-rows"></div><div class="stack"><button class="btn" data-act="scrmeasure">Measure again</button><button class="btn" data-act="scrreset">Try viewport reset</button><button class="btn pri" data-act="scrclose">Close</button></div><i class="scrl" id="scr-pg"></i><i class="scrl" id="scr-sc"></i><i class="scrl" id="scr-lv"></i>`;
+ document.body.appendChild(o);scrMeasure();}
+function scrReset(){const meta=document.querySelector('meta[name=viewport]');if(!meta)return;const old=meta.content;meta.content='width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1';setTimeout(()=>{meta.content=old;setTimeout(scrMeasure,300);},200);}
+
 /* Keep sheets inside the part of the screen you can actually see. On an iPhone the keyboard covers the bottom of the screen WITHOUT resizing the page, so a bottom-anchored sheet used to sit behind it and the page got pushed around.
    vvFit publishes the visible area as --vvt (its top) and --vvh (its height), which the sheet overlay already reads. body.kb marks a text field being edited in a sheet, and folds the extras away (see the CSS). */
-let MISS=0;const fitMiss=()=>MISS;   /* how much shorter the page is than the screen in the Home Screen app (see screenShortfall) */
-const vvFit=()=>{const v=window.visualViewport,r=document.documentElement.style;if(!v)return;r.setProperty('--vvt',v.offsetTop+'px');r.setProperty('--vvh',(v.height+(window.innerHeight-v.height<80?fitMiss():0))+'px');};
+const vvFit=()=>{const v=window.visualViewport,r=document.documentElement.style;if(!v)return;r.setProperty('--vvt',v.offsetTop+'px');r.setProperty('--vvh',v.height+'px');};
 const kbSet=on=>document.body.classList.toggle('kb',!!on),kbField=el=>!!(el&&el.matches&&el.matches('#sheet input:not([type=checkbox]):not([type=radio]):not([type=file]),#sheet textarea'));
 if(window.visualViewport){visualViewport.addEventListener('resize',()=>{vvFit();if(window.innerHeight-visualViewport.height<80&&!kbField(document.activeElement))kbSet(false);});visualViewport.addEventListener('scroll',vvFit);vvFit();}
-const fitScreen=()=>{MISS=screenShortfall(window.innerHeight,Math.max(screen.height||0,screen.width||0),navigator.standalone===true,window.innerHeight>window.innerWidth);document.documentElement.style.setProperty('--miss',MISS+'px');vvFit();};
-window.addEventListener('resize',fitScreen);window.addEventListener('orientationchange',fitScreen);
-fitScreen();
 let kbT;document.addEventListener('focusin',e=>{clearTimeout(kbT);if(kbField(e.target))kbSet(true);});
 document.addEventListener('focusout',()=>{clearTimeout(kbT);kbT=setTimeout(()=>{if(!kbField(document.activeElement))kbSet(false);},120);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&iso()!==ui.today){ui.today=iso();ui.day=new Date().getDay();render();}});
