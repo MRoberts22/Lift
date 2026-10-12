@@ -735,7 +735,7 @@ const RAW=[
 ];
 /* old v1 file keys -> new exercise ids (so earlier weights carry over) */
 const V1={chest_press_machine:'chest_press',incline_db_press:'incline_db_press',db_ohp_mon:'db_ohp',lat_raise_mon:'lateral_raise',tri_ext_mon:'overhead_tri_ext',pullups:'pullups',db_row:'db_row',lat_pulldown:'lat_pulldown',seated_row:'seated_row',rear_delt:'rear_delt_machine',bicep_curl:'bicep_curl',hammer_curl:'hammer_curl',leg_press:'leg_press',rdl:'rdl',lunges:'walking_lunges',leg_curl:'leg_curl',lower_back:'lower_back_machine',calf_raise:'standing_calf_raise',db_ohp_sat:'db_ohp',lat_raise_sat:'lateral_raise',face_pulls:'face_pull',bicep_sat:'bicep_curl',hammer_sat:'hammer_curl',tri_sat:'overhead_tri_ext'};
-const BUILD_ID='ca9fd2344e';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
+const BUILD_ID='bc12aa2dcd';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
 const FLAVOR='consumer';   // stamped by build.mjs: 'dev' or 'consumer'. In source it is a placeholder and counts as dev. This is the ONLY place the placeholder appears.
 const APP_VERSION='7.0.0';   // stamped by build.mjs from package.json: the release number. Display-only. The stored data format has its own number (SCHEMA). This is the ONLY place the placeholder appears.
 const VERSION_LABEL=/^\d+\.\d+/.test(APP_VERSION)?APP_VERSION.match(/^\d+\.\d+/)[0]:'dev';
@@ -2020,7 +2020,7 @@ const screenShortfall=(inner,screenH,standalone,portrait)=>{if(!standalone||!por
  m: inner [w,h], vv [h,top] or null, client [w,h], screen [w,h], outer [w,h], vh svh lvh dvh, top and bottom insets, standalone. Reading only: nothing is stored or changed. */
 function screenRows(m){const wh=a=>a?a[0]+' x '+a[1]:'not available',d=m.screen[1]-m.inner[1];
  return[['Page (innerWidth x innerHeight)',wh(m.inner)],['Visible area (visualViewport)',m.vv?m.vv[0]+' tall, top '+m.vv[1]:'not available'],['Document (clientHeight)',wh(m.client)],['Screen (screen.width x height)',wh(m.screen)],['Window (outerWidth x outerHeight)',wh(m.outer)],
-  ['100vh',String(m.vh)],['100svh',String(m.svh)],['100lvh',String(m.lvh)],['100dvh',String(m.dvh)],['Status bar inset (top)',String(m.top)],['Home bar inset (bottom)',String(m.bottom)],['Home Screen app',m.standalone?'yes':'no'],['Bottom space used by the page',m.sab==null?'not measured':String(m.sab)],
+  ['100vh',String(m.vh)],['100svh',String(m.svh)],['100lvh',String(m.lvh)],['100dvh',String(m.dvh)],['Status bar inset (top)',String(m.top)],['Home bar inset (bottom)',String(m.bottom)],['Home Screen app',m.standalone?'yes':'no'],['Bottom space used by the page',m.sab==null?'not measured':String(m.sab)],['Viewport fix attempts',(m.fixes&&m.fixes.length)?m.fixes.join('; '):'none needed'],
   ['Page vs screen',d>0?d+' shorter':d<0?(-d)+' taller':'same height']];}
 
 /* ---------- first-launch wizard: choose the workouts of one day (or of the warm-up or core list) ----------
@@ -2813,7 +2813,7 @@ document.addEventListener('input',e=>{if(e.target.id==='suname'&&ui.su)ui.su.nam
  It changes nothing and stores nothing. "Try viewport reset" briefly rewrites the viewport tag and puts it back, to see whether the numbers change. */
 function scrMeasure(){const px=(css)=>{const e=document.createElement('div');e.style.cssText='position:fixed;left:0;top:0;width:1px;visibility:hidden;pointer-events:none;'+css;document.body.appendChild(e);const n=e.offsetHeight,p=getComputedStyle(e);const t=parseFloat(p.paddingTop)||0,b=parseFloat(p.paddingBottom)||0;e.remove();return[n,t,b];};
  const ins=px('padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)'),v=window.visualViewport,r=document.documentElement;
- const m={inner:[innerWidth,innerHeight],vv:v?[Math.round(v.height),Math.round(v.offsetTop)]:null,client:[r.clientWidth,r.clientHeight],screen:[screen.width,screen.height],outer:[outerWidth,outerHeight],vh:px('height:100vh')[0],svh:px('height:100svh')[0],lvh:px('height:100lvh')[0],dvh:px('height:100dvh')[0],top:ins[1],bottom:ins[2],sab:px('padding-bottom:var(--sab)')[2]+'px',standalone:navigator.standalone===true};
+ const m={inner:[innerWidth,innerHeight],vv:v?[Math.round(v.height),Math.round(v.offsetTop)]:null,client:[r.clientWidth,r.clientHeight],screen:[screen.width,screen.height],outer:[outerWidth,outerHeight],vh:px('height:100vh')[0],svh:px('height:100svh')[0],lvh:px('height:100lvh')[0],dvh:px('height:100dvh')[0],top:ins[1],bottom:ins[2],sab:px('padding-bottom:var(--sab)')[2]+'px',standalone:navigator.standalone===true,fixes:FIT.log.slice()};
  const el=$('#scr-rows');if(el)el.innerHTML=screenRows(m).map(([k,x])=>`<div class="scr-r"><span>${esc(k)}</span><b>${esc(x)}</b></div>`).join('');const sc=$('#scr-sc');if(sc)sc.style.top=(screen.height-4)+'px';}
 function scrShow(){if($('#scr'))return;const o=document.createElement('div');o.id='scr';
  o.innerHTML=`<h2>Screen check</h2><p class="muted sm">Red line: bottom of the page. Blue line: bottom of the screen. Green line: bottom of 100lvh. Send a screenshot of this screen.</p><div id="scr-rows"></div><div class="stack"><button class="btn" data-act="scrmeasure">Measure again</button><button class="btn" data-act="scrreset">Try viewport reset</button><button class="btn pri" data-act="scrclose">Close</button></div><i class="scrl" id="scr-pg"></i><i class="scrl" id="scr-sc"></i><i class="scrl" id="scr-lv"></i>`;
@@ -2826,12 +2826,21 @@ function viewportNudge(done){const meta=document.querySelector('meta[name=viewpo
 const vvFit=()=>{const v=window.visualViewport,r=document.documentElement.style;if(!v)return;r.setProperty('--vvt',v.offsetTop+'px');r.setProperty('--vvh',v.height+'px');};
 const kbSet=on=>document.body.classList.toggle('kb',!!on),kbField=el=>!!(el&&el.matches&&el.matches('#sheet input:not([type=checkbox]):not([type=radio]):not([type=file]),#sheet textarea'));
 if(window.visualViewport){visualViewport.addEventListener('resize',()=>{vvFit();if(window.innerHeight-visualViewport.height<80&&!kbField(document.activeElement))kbSet(false);});visualViewport.addEventListener('scroll',vvFit);vvFit();}
-/* Home Screen app: if the page is shorter than the screen, nudge the viewport once; if it is still short, drop the home-bar space (--sab) so the bottom bar sits at the bottom of what the phone does draw. */
-let NUDGED=false;
-function fitViewport(){const miss=screenShortfall(window.innerHeight,Math.max(screen.height||0,screen.width||0),navigator.standalone===true,window.innerHeight>window.innerWidth),r=document.documentElement.style;
+/* Home Screen app: if the page is shorter than the screen, drop the home-bar space (--sab) at once so the bottom bar sits at the bottom of what the phone does draw, then try these fixes one at a time, each at most once, to make the phone give the page its full height. Each one puts back whatever it touched. When the page is full height again, --sab goes back to the phone's own value.
+   FIT.log keeps what each fix achieved, in words, for the Screen check. FIT.busy stops the resize a fix causes from starting the next one early. */
+const FIT={step:0,log:[],cur:null,busy:false};
+const FIXES=[
+ ['viewport nudge',cb=>viewportNudge(cb)],
+ ['forced reflow',cb=>{const b=document.body,d=b.style.display;b.style.display='none';void b.offsetHeight;b.style.display=d;setTimeout(cb,300);}],
+ ['resize event',cb=>{window.dispatchEvent(new Event('resize'));setTimeout(cb,300);}],
+ ['viewport tag replace',cb=>{const m=document.querySelector('meta[name=viewport]');if(!m){cb();return;}const c=m.cloneNode(),p=m.parentNode;p.replaceChild(c,m);setTimeout(()=>{p.replaceChild(m,c);setTimeout(cb,300);},200);}],
+ ['status bar tag toggle',cb=>{const m=document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]');if(!m){cb();return;}const old=m.content;m.content='default';setTimeout(()=>{m.content=old;setTimeout(cb,300);},200);}]];
+function fitViewport(){if(FIT.busy)return;
+ const miss=screenShortfall(window.innerHeight,Math.max(screen.height||0,screen.width||0),navigator.standalone===true,window.innerHeight>window.innerWidth),r=document.documentElement.style;
+ if(FIT.cur){FIT.log.push(FIT.cur+': '+(miss?'still '+miss+' short':'fixed'));FIT.cur=null;}
  if(!miss){r.removeProperty('--sab');return;}
- if(!NUDGED){NUDGED=true;viewportNudge(fitViewport);return;}
- r.setProperty('--sab','0px');}
+ r.setProperty('--sab','0px');
+ if(FIT.step<FIXES.length){const f=FIXES[FIT.step++];FIT.cur=f[0];FIT.busy=true;f[1](()=>{FIT.busy=false;fitViewport();});}}
 window.addEventListener('resize',fitViewport);window.addEventListener('orientationchange',fitViewport);
 fitViewport();
 setTimeout(fitViewport,800);
