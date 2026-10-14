@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lift">
 <meta name="theme-color" id="tc" content="#EDF0F5">
 <script>(function(){try{var o=(JSON.parse(localStorage.getItem("liftlog_v2")||"null")||{}).opt||{},t=o.theme,d=t==="dark"||(t!=="light"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();</script>
@@ -735,7 +735,7 @@ const RAW=[
 ];
 /* old v1 file keys -> new exercise ids (so earlier weights carry over) */
 const V1={chest_press_machine:'chest_press',incline_db_press:'incline_db_press',db_ohp_mon:'db_ohp',lat_raise_mon:'lateral_raise',tri_ext_mon:'overhead_tri_ext',pullups:'pullups',db_row:'db_row',lat_pulldown:'lat_pulldown',seated_row:'seated_row',rear_delt:'rear_delt_machine',bicep_curl:'bicep_curl',hammer_curl:'hammer_curl',leg_press:'leg_press',rdl:'rdl',lunges:'walking_lunges',leg_curl:'leg_curl',lower_back:'lower_back_machine',calf_raise:'standing_calf_raise',db_ohp_sat:'db_ohp',lat_raise_sat:'lateral_raise',face_pulls:'face_pull',bicep_sat:'bicep_curl',hammer_sat:'hammer_curl',tri_sat:'overhead_tri_ext'};
-const BUILD_ID='bc12aa2dcd';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
+const BUILD_ID='d36a909067';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
 const FLAVOR='consumer';   // stamped by build.mjs: 'dev' or 'consumer'. In source it is a placeholder and counts as dev. This is the ONLY place the placeholder appears.
 const APP_VERSION='7.0.0';   // stamped by build.mjs from package.json: the release number. Display-only. The stored data format has its own number (SCHEMA). This is the ONLY place the placeholder appears.
 const VERSION_LABEL=/^\d+\.\d+/.test(APP_VERSION)?APP_VERSION.match(/^\d+\.\d+/)[0]:'dev';
@@ -2011,10 +2011,11 @@ function rxCell(id,date,fallback){if(rxReserve(id,date))return{v:rxSets(id,date)
 const DEVTOOLS={isDev:false,tiles:[],notes:[],banner:null,actions:{},sheets:{},wizardChoices:[],sumode:null,onErase:null,afterRender:null};
 hooks.saveFailed=()=>showSaveWarning();hooks.systemDark=()=>sysDark();hooks.saveOk=()=>hideSaveWarning();hooks.toast=(m,u)=>toast(m,u);hooks.theme=()=>applyTheme();
 
-/* ---------- Home Screen (full screen) app on an iPhone: is the page shorter than the screen? ----------
- There the page can end a status bar above the screen's bottom edge, so the home-bar space was counted below a page that already stops short of it. This is how much shorter, measured, never assumed.
+/* ---------- Home Screen (full screen) app on an iPhone: does the page stop short of the bottom of the screen? ----------
+ A page that runs under the status bar (top inset above 20) should be as tall as the screen. When it is shorter, its bottom edge sits above the real one, and the home-bar space was counted below a page that already stops short of it. This is how much shorter, measured, never assumed.
+ A page that starts BELOW the status bar (top inset 0, the "default" status bar style) is shorter by exactly the status bar and ends at the screen's bottom edge, so it is never short.
  Only the Home Screen app in portrait, and only a status-bar-sized gap (20 to 80), so a keyboard or a browser toolbar is never mistaken for it. */
-const screenShortfall=(inner,screenH,standalone,portrait)=>{if(!standalone||!portrait||!Number.isFinite(inner)||!Number.isFinite(screenH))return 0;const d=screenH-inner;return d>=20&&d<=80?Math.round(d):0;};
+const screenShortfall=(inner,screenH,standalone,portrait,top)=>{if(!standalone||!portrait||!Number.isFinite(inner)||!Number.isFinite(screenH)||!(top>=20))return 0;const d=screenH-inner;return d>=20&&d<=80?Math.round(d):0;};
 
 /* ---------- Screen check (Settings): the real numbers behind the page height, as rows of [label, value] ----------
  m: inner [w,h], vv [h,top] or null, client [w,h], screen [w,h], outer [w,h], vh svh lvh dvh, top and bottom insets, standalone. Reading only: nothing is stored or changed. */
@@ -2811,7 +2812,10 @@ document.addEventListener('input',e=>{if(e.target.id==='suname'&&ui.su)ui.su.nam
 /* ---------- Screen check (Settings) ----------
  Measures the real screen on this phone and draws three edge lines: red is the bottom of the page, blue the bottom of the screen, green the bottom of 100lvh. Any line you cannot see is not drawn by the phone.
  It changes nothing and stores nothing. "Try viewport reset" briefly rewrites the viewport tag and puts it back, to see whether the numbers change. */
-function scrMeasure(){const px=(css)=>{const e=document.createElement('div');e.style.cssText='position:fixed;left:0;top:0;width:1px;visibility:hidden;pointer-events:none;'+css;document.body.appendChild(e);const n=e.offsetHeight,p=getComputedStyle(e);const t=parseFloat(p.paddingTop)||0,b=parseFloat(p.paddingBottom)||0;e.remove();return[n,t,b];};
+/* Measure a CSS length on the phone: a hidden fixed box styled with css, returns [height, top padding, bottom padding]. */
+function probePx(css){const e=document.createElement('div');e.style.cssText='position:fixed;left:0;top:0;width:1px;visibility:hidden;pointer-events:none;'+css;document.body.appendChild(e);const n=e.offsetHeight,p=getComputedStyle(e);const t=parseFloat(p.paddingTop)||0,b=parseFloat(p.paddingBottom)||0;e.remove();return[n,t,b];}
+function insetTop(){return probePx('padding-top:env(safe-area-inset-top)')[1];}
+function scrMeasure(){const px=probePx;
  const ins=px('padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)'),v=window.visualViewport,r=document.documentElement;
  const m={inner:[innerWidth,innerHeight],vv:v?[Math.round(v.height),Math.round(v.offsetTop)]:null,client:[r.clientWidth,r.clientHeight],screen:[screen.width,screen.height],outer:[outerWidth,outerHeight],vh:px('height:100vh')[0],svh:px('height:100svh')[0],lvh:px('height:100lvh')[0],dvh:px('height:100dvh')[0],top:ins[1],bottom:ins[2],sab:px('padding-bottom:var(--sab)')[2]+'px',standalone:navigator.standalone===true,fixes:FIT.log.slice()};
  const el=$('#scr-rows');if(el)el.innerHTML=screenRows(m).map(([k,x])=>`<div class="scr-r"><span>${esc(k)}</span><b>${esc(x)}</b></div>`).join('');const sc=$('#scr-sc');if(sc)sc.style.top=(screen.height-4)+'px';}
@@ -2834,9 +2838,9 @@ const FIXES=[
  ['forced reflow',cb=>{const b=document.body,d=b.style.display;b.style.display='none';void b.offsetHeight;b.style.display=d;setTimeout(cb,300);}],
  ['resize event',cb=>{window.dispatchEvent(new Event('resize'));setTimeout(cb,300);}],
  ['viewport tag replace',cb=>{const m=document.querySelector('meta[name=viewport]');if(!m){cb();return;}const c=m.cloneNode(),p=m.parentNode;p.replaceChild(c,m);setTimeout(()=>{p.replaceChild(m,c);setTimeout(cb,300);},200);}],
- ['status bar tag toggle',cb=>{const m=document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]');if(!m){cb();return;}const old=m.content;m.content='default';setTimeout(()=>{m.content=old;setTimeout(cb,300);},200);}]];
+ ['status bar tag toggle',cb=>{const m=document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]');if(!m){cb();return;}const old=m.content;m.content='black-translucent';setTimeout(()=>{m.content=old;setTimeout(cb,300);},200);}]];
 function fitViewport(){if(FIT.busy)return;
- const miss=screenShortfall(window.innerHeight,Math.max(screen.height||0,screen.width||0),navigator.standalone===true,window.innerHeight>window.innerWidth),r=document.documentElement.style;
+ const miss=screenShortfall(window.innerHeight,Math.max(screen.height||0,screen.width||0),navigator.standalone===true,window.innerHeight>window.innerWidth,insetTop()),r=document.documentElement.style;
  if(FIT.cur){FIT.log.push(FIT.cur+': '+(miss?'still '+miss+' short':'fixed'));FIT.cur=null;}
  if(!miss){r.removeProperty('--sab');return;}
  r.setProperty('--sab','0px');
