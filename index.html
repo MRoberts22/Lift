@@ -735,7 +735,7 @@ const RAW=[
 ];
 /* old v1 file keys -> new exercise ids (so earlier weights carry over) */
 const V1={chest_press_machine:'chest_press',incline_db_press:'incline_db_press',db_ohp_mon:'db_ohp',lat_raise_mon:'lateral_raise',tri_ext_mon:'overhead_tri_ext',pullups:'pullups',db_row:'db_row',lat_pulldown:'lat_pulldown',seated_row:'seated_row',rear_delt:'rear_delt_machine',bicep_curl:'bicep_curl',hammer_curl:'hammer_curl',leg_press:'leg_press',rdl:'rdl',lunges:'walking_lunges',leg_curl:'leg_curl',lower_back:'lower_back_machine',calf_raise:'standing_calf_raise',db_ohp_sat:'db_ohp',lat_raise_sat:'lateral_raise',face_pulls:'face_pull',bicep_sat:'bicep_curl',hammer_sat:'hammer_curl',tri_sat:'overhead_tri_ext'};
-const BUILD_ID='d36a909067';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
+const BUILD_ID='dcede4eede';   // stamped by build.mjs: a hash of this build, also the service worker's cache name. This is the ONLY place the placeholder appears.
 const FLAVOR='consumer';   // stamped by build.mjs: 'dev' or 'consumer'. In source it is a placeholder and counts as dev. This is the ONLY place the placeholder appears.
 const APP_VERSION='7.0.0';   // stamped by build.mjs from package.json: the release number. Display-only. The stored data format has its own number (SCHEMA). This is the ONLY place the placeholder appears.
 const VERSION_LABEL=/^\d+\.\d+/.test(APP_VERSION)?APP_VERSION.match(/^\d+\.\d+/)[0]:'dev';
@@ -1219,6 +1219,9 @@ function applyRemove(l,id,date,scope){const b=scope==='all'?routineList(l,date):
  if(scope==='all'){const i=b.indexOf(id);if(i>=0)b.splice(i,1);dropOvr(date,l,id);}
  else{const o=ovr(date);o.add[l]=(o.add[l]||[]).filter(x=>x!==id);if(b.includes(id)){o.rm[l]=o.rm[l]||[];if(!o.rm[l].includes(id))o.rm[l].push(id);}}
  save();}
+/* An add or remove made while looking at one day. "Every <weekday>" changes the routine from today on, so a day of this week that has already passed keeps the routine it was planned against and would not show what was just done. For that one day the same change is also made as a one-off. Today, later days and the daily warm-up and core lists already show it. */
+function applyHere(kind,l,id,date,scope){const add=kind==='add',f=add?applyAdd:applyRemove;f(l,id,date,scope);
+ if(scope==='all'&&l==='main'&&date<iso()&&listFor(l,date).includes(id)!==add)f(l,id,date,'once');}
 const snapPlan=()=>JSON.stringify({tpl:S.tpl,plan:S.plan,ovr:S.ovr,rej:S.rej});
 function restorePlan(s){const o=JSON.parse(s);S.tpl=o.tpl;S.plan=o.plan;S.ovr=o.ovr;S.rej=o.rej;save();}
 function trackedIds(){const s=new Set();for(let i=0;i<7;i++)S.tpl[i].forEach(id=>s.add(id));const t=iso();
@@ -2740,12 +2743,12 @@ function act0(a,el){const d=el.dataset,id=d.id,l=d.l;ui.focus=false;
   case 'askrm':askRemove(l,id);break;
   case 'scope':{const s=ui.sheet;
    if(s.kind==='addto'){applyTargets(s.id,s.targets,d.v==='all'?'all':'week');ui.sheet=null;}
-   else if(s.kind==='add'){applyAdd(s.l,s.id,s.date,d.v);ui.sheet=null;ui.sug=null;}
-   else{const snap=snapPlan();applyRemove(s.l,s.id,s.date,d.v);rejectSug({l:s.l,date:s.date,id:s.id});ui.sheet=null;
+   else if(s.kind==='add'){applyHere('add',s.l,s.id,s.date,d.v);ui.sheet=null;ui.sug=null;}
+   else{const snap=snapPlan();applyHere('remove',s.l,s.id,s.date,d.v);rejectSug({l:s.l,date:s.date,id:s.id});ui.sheet=null;
     ui.sug=makeSug(s.l,s.date,{from:s.id,muscle:E[s.id].p,scope:d.v});
     toast(E[s.id].name+' removed',()=>{restorePlan(snap);ui.sug=null;render();});}
    break;}
-  case 'sugyes':{const g=ui.sug;if(g)applyAdd(g.l,g.id,g.date,g.scope||'once');ui.sug=null;break;}
+  case 'sugyes':{const g=ui.sug;if(g)applyHere('add',g.l,g.id,g.date,g.scope||'once');ui.sug=null;break;}
   case 'sugno':{if(ui.sug)rejectSug(ui.sug);ui.sug=null;break;}
   case 'sugnext':{const g=ui.sug;if(g){rejectSug(g);ui.sug=makeSug(g.l,g.date,{from:g.from,muscle:g.muscle,scope:g.scope});}break;}
   case 'cdopen':pushSheet({t:'cardio',c:d.v,date:dayDate(ui.day),i:null});ui.focus=true;break;
